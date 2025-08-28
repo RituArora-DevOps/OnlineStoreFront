@@ -1,0 +1,58 @@
+# Build artifacts
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Logs & Temp
+*.log
+*.tlog
+*.tmp
+*.temp
+*.dbmdl
+
+# Entity Framework Migrations cache
+migrations/
+
+# Database files (don’t commit your local SQL MDF/LDF)
+*.mdf
+*.ldf
+
+# Config & secrets
+appsettings.Development.json
+secrets.json
+
+# IIS
+*.vspscc
+iisexpress/
+
+# Publish output
+publish/
+out/
+
+# Others
+_ReSharper*/
+*.resharper
+*.DotSettings.user
