@@ -13,8 +13,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 // Business DbContext (OnlineStore)
 var businessConnectionString = builder.Configuration.GetConnectionString("OnlineStoreContextConnection") ?? throw new InvalidOperationException("Connection string 'OnlineStoreContextConnection' not found."); ;
 
-builder.Services.AddDbContext<OnlineStoreContext>(options =>
-    options.UseSqlServer(businessConnectionString));
+//builder.Services.AddDbContext<OnlineStoreContext>(options =>
+    //options.UseSqlServer(businessConnectionString));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
