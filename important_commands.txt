@@ -1,0 +1,12 @@
+# for scaffolding DBContext from an existing DB
+Scaffold-DbContext "Server=YOUR_SERVER_NAME;Database=OnlineStoreDb;Trusted_Connection=True;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context OnlineStoreDbContext -DataAnnotations
+
+#For installing Scaffolding NuGet Packages, if misssing
+dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design
+dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+
+dotnet tool install -g dotnet-aspnet-codegenerator
+
+dotnet restore
+dotnet build
