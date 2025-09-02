@@ -16,16 +16,24 @@ namespace ECommerceSecureApp.Repository
 
         public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
-        public async Task<T?> GetByIdAsync(object id) => await _dbSet.FindAsync(id);
+        public async Task<T?> GetByIdAsync(object id) => await _dbSet.FindAsync(id)!;
 
         public async Task InsertAsync(T entity) => await _dbSet.AddAsync(entity);
 
-        public async Task UpdateAsync(T entity) => _dbSet.Update(entity);
+        public async Task UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+            await SaveAsync();
+        }
 
         public async Task DeleteAsync(object id)
         {
             var entity = await _dbSet.FindAsync(id);
-            if (entity != null) _dbSet.Remove(entity);
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+                await SaveAsync();
+            }
         }
 
         public async Task SaveAsync() => await _context.SaveChangesAsync();
