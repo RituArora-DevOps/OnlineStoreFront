@@ -6,18 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceSecureApp.Repository
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
-        // The following variable is  going to hold the OnlineStoreDbContext instance
-        private readonly OnlineStoreDbContext _context;
-
         // Constructor to initialize the OlineStoreDBContext instance via Dependency Injection
         // Initializing the OnlineStoreDbContext instance which it received as an argument
         // MVC Framework DI Container will inject the OnlineStoreDbContext instance
-        public ProductRepository(OnlineStoreDbContext context) 
-        {
-            _context = context;
-        }
+        public ProductRepository(OnlineStoreDbContext context) : base(context) { }
 
         // Returns all employees from the database
         public async Task<PagedResult<Product>> GetAllProductsAsync(int pageNumber, int pageSize)
@@ -37,16 +31,7 @@ namespace ECommerceSecureApp.Repository
             };
         }
 
-        // Retrieves a single product by their Id
-        public async Task<Product?> GetProductByIdAsync(int productId)
-        {
-            var product = await  _context.Products
-                .FirstOrDefaultAsync(m => m.ProductId == productId);
-
-            return product;
-        }
-
-        // Retrieves products by category
+        // Retrieves products by different criteries
         public async Task<PagedResult<Product>> SearchProductsAsync(ProductSearchCriteria criteria, int pageNumber, int pageSize)
         {
             IQueryable<Product> query = _context.Products;
@@ -76,39 +61,6 @@ namespace ECommerceSecureApp.Repository
             };
 
         }
-
-        // Adds a new product to the database
-        public async Task<Product> AddProductAsync(Product product)
-        {
-            await _context.Products.AddAsync(product);
-            await SaveAsync();
-            return product;
-        }
-
-        // Updates an existing product in the database
-        public async Task<Product> UpdateProductAsync(Product product)
-        {
-            _context.Products.Update(product);
-            await SaveAsync();
-            return product;
-        }
-
-        // Deletes a product from the database by their Id
-        public async Task DeleteProductAsync(int productId)
-        {
-            var product = await GetProductByIdAsync(productId);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-            }
-        }
-
-        // Saves changes to the database
-        public async Task SaveAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
-
 
     }
 }

@@ -1,5 +1,6 @@
 using ECommerceSecureApp.Data;
 using ECommerceSecureApp.Models;
+using ECommerceSecureApp.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => {
 
 // Add services for Razor Pages and MVC controllers with views
 builder.Services.AddControllersWithViews();
+
+// Register repositories in DI
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
 
