@@ -10,7 +10,6 @@ var identityConn = builder.Configuration.GetConnectionString("DefaultConnection"
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(identityConn));
 
-
 builder.Services.AddDbContext<OnlineStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("OnlineStoreConnection")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -21,6 +20,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => {
     options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Add services for Razor Pages and MVC controllers with views
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -38,15 +39,17 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// Default route configuration for MVC
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Products}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 app.MapRazorPages()

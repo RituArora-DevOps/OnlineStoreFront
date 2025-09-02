@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECommerceSecureApp.DesignPatternStructural.DecoratorDesignPattern.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceSecureApp.Models;
 
 [Table("Products", Schema = "Product")]
 [Index("Category", Name = "IX_Products_Category")]
-public partial class Product
+public partial class Product 
 {
     [Key]
     public int ProductId { get; set; }
