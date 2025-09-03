@@ -1,7 +1,11 @@
-﻿@model IEnumerable<ECommerceSecureApp.Models.Product>
+﻿@model ECommerceSecureApp.Models.Utility.PagedResult<ECommerceSecureApp.Models.Product>
 
 @{
     ViewData["Title"] = "Index";
+}
+
+@{
+    var dummy = new ECommerceSecureApp.Models.Product();
 }
 
 <h1>Index</h1>
@@ -12,29 +16,17 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ModifiedDate)
-            </th>
+            <th>@Html.DisplayNameFor(model => dummy.Price)</th>
+            <th>@Html.DisplayNameFor(model => dummy.Category)</th>
+            <th>@Html.DisplayNameFor(model => dummy.Name)</th>
+            <th>@Html.DisplayNameFor(model => dummy.Description)</th>
+            <th>@Html.DisplayNameFor(model => dummy.CreatedDate)</th>
+            <th>@Html.DisplayNameFor(model => dummy.ModifiedDate)</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Items) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)

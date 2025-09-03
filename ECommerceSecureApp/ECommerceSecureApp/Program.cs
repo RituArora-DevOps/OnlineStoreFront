@@ -27,6 +27,7 @@ builder.Services.AddControllersWithViews();
 
 // Register repositories in DI
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+// This tells ASP.NET - whenever a controller asks for IProductRepository, give them an instance of ProductRepository.
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();

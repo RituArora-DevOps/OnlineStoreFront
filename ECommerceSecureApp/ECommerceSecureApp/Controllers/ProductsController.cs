@@ -6,22 +6,42 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ECommerceSecureApp.Models;
+using ECommerceSecureApp.Repository;
+using ECommerceSecureApp.BehavioralDesignPattern.StrategyDesignPattern.Search;
 
 namespace ECommerceSecureApp.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly OnlineStoreDbContext _context;
-
-        public ProductsController(OnlineStoreDbContext context)
+        private readonly IProductRepository _productRepository;
+        
+        // Follows Dependency Inversion principle
+        public ProductsController(IProductRepository productRepository)
         {
-            _context = context;
+            _productRepository = productRepository;
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.Products.ToListAsync());
+            int pageSize = 10;
+            var pagedProducts = await _productRepository.GetAllProductsAsync(page, pageSize);
+            return View(pagedProducts);
+        }
+
+        // GET: Products/Search?name=Shoes&category=Clothing&minPrice=50&maxPrice=100&page=1
+        public async Task<IActionResult> Search(string name, string category, decimal minPrice, decimal maxPrice, int page=1)
+        {
+            var criteria = new ProductSearchCriteria
+            {
+                Name = name,
+                Category = category,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+            };
+
+            var results = await _productRepository.SearchProductsAsync(criteria, page, 10);
+            return View("Index", results.Items);
         }
 
         // GET: Products/Details/5
@@ -32,8 +52,7 @@ namespace ECommerceSecureApp.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.ProductId == id);
+            var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -57,8 +76,8 @@ namespace ECommerceSecureApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                await _productRepository.InsertAsync(product);
+                await _productRepository.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
@@ -72,7 +91,7 @@ namespace ECommerceSecureApp.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -96,12 +115,12 @@ namespace ECommerceSecureApp.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await _productRepository.UpdateAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.ProductId))
+                    var exists = await _productRepository.GetByIdAsync(product.ProductId);
+                    if (exists == null)
                     {
                         return NotFound();
                     }
@@ -123,8 +142,7 @@ namespace ECommerceSecureApp.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.ProductId == id);
+            var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
@@ -138,19 +156,20 @@ namespace ECommerceSecureApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productRepository.GetByIdAsync(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                await _productRepository.DeleteAsync(product);
             }
 
-            await _context.SaveChangesAsync();
+            await _productRepository.SaveAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        private async Task<bool> ProductExists(int id)
         {
-            return _context.Products.Any(e => e.ProductId == id);
+            var product = await _productRepository.GetByIdAsync(id);
+            return product != null;
         }
     }
 }
