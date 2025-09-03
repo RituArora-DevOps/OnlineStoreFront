@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OnlineStoreFront.Data;
 using OnlineStoreFront.Models.Business;
+using OnlineStoreFront.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Identity DB
@@ -17,6 +18,9 @@ var businessConnectionString = builder.Configuration.GetConnectionString("Online
 builder.Services.AddDbContext<OnlineStoreContext>(options =>
     options.UseSqlServer(businessConnectionString));
 
+// Register services
+builder.Services.AddScoped<ReviewService>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -31,16 +35,20 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages();
 
 
 app.Run();
