@@ -20,7 +20,7 @@ namespace ECommerceSecureApp.Controllers
         }
 
         // Storefron (Product Browsing)
-        public async Task<IActionResult> Index(string name, string category, decimal minPrice, decimal maxPrice, int page=1)
+        public async Task<IActionResult> Index(string? name, string? category, decimal? minPrice, decimal? maxPrice, int page=1)
         {
             int pageSize = 10;
 
