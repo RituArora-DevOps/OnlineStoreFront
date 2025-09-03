@@ -21,6 +21,11 @@ namespace ECommerceSecureApp.Controllers
             _productRepository = productRepository;
         }
 
+        private void PopulateCategoryList()
+        {
+            ViewBag.CategoryList = new SelectList(new[] { "Electronics", "Clothing", "Grocery" });
+        }
+
         // GET: Products
         public async Task<IActionResult> Index(int page = 1)
         {
@@ -64,6 +69,8 @@ namespace ECommerceSecureApp.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
+            PopulateCategoryList();
+
             return View();
         }
 
@@ -80,6 +87,8 @@ namespace ECommerceSecureApp.Controllers
                 await _productRepository.SaveAsync();
                 return RedirectToAction(nameof(Index));
             }
+            PopulateCategoryList();
+
             return View(product);
         }
 
@@ -96,6 +105,8 @@ namespace ECommerceSecureApp.Controllers
             {
                 return NotFound();
             }
+            PopulateCategoryList();
+
             return View(product);
         }
 
@@ -131,6 +142,9 @@ namespace ECommerceSecureApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            PopulateCategoryList();
+
             return View(product);
         }
 
@@ -159,7 +173,7 @@ namespace ECommerceSecureApp.Controllers
             var product = await _productRepository.GetByIdAsync(id);
             if (product != null)
             {
-                await _productRepository.DeleteAsync(product);
+                await _productRepository.DeleteAsync(product.ProductId);
             }
 
             await _productRepository.SaveAsync();
