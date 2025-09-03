@@ -1,0 +1,175 @@
+@model IEnumerable<OnlineStoreFront.Models.Business.ProductReview>
+
+@{
+    ViewData["Title"] = "Product Reviews";
+    var product = ViewBag.Product as OnlineStoreFront.Models.Business.Product;
+    var averageRating = ViewBag.AverageRating as double?;
+    var reviewCount = ViewBag.ReviewCount as int?;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Reviews for @product?.Name</h2>
+                <a asp-controller="Product" asp-action="Details" asp-route-id="@product?.ProductId" class="btn btn-outline-secondary">
+                    ← Back to Product
+                </a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["InfoMessage"] != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    @TempData["InfoMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Product Summary -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">@product?.Name</h5>
+                            <p class="card-text text-muted">@product?.Description</p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $@product?.Price.ToString("F2")
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            @if (averageRating.HasValue)
+                            {
+                                <div class="rating mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Round(averageRating.Value))
+                                        {
+                                            <span class="text-warning fs-4">★</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted fs-4">☆</span>
+                                        }
+                                    }
+                                    <span class="ms-2 fs-5">@averageRating.Value.ToString("F1")</span>
+                                </div>
+                                <p class="text-muted">Based on @reviewCount review(s)</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No reviews yet</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Review Button -->
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="mb-4">
+                    <a asp-action="Create" asp-route-productId="@product?.ProductId" class="btn btn-primary">
+                        <i class="fas fa-star"></i> Write a Review
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Login to write a review</a>
+                </div>
+            }
+
+            <!-- Reviews List -->
+            @if (Model.Any())
+            {
+                <h4>Customer Reviews</h4>
+                <div class="row">
+                    @foreach (var review in Model)
+                    {
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <div class="rating">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= review.Rating)
+                                                    {
+                                                        <span class="text-warning">★</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">☆</span>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">@review.CreatedDate.ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(review.Comment))
+                                    {
+                                        <p class="card-text">@review.Comment</p>
+                                    }
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">By: @review.ExternalUserId</small>
+                                        
+                                        @if (User.Identity.IsAuthenticated && 
+                                             (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == review.ExternalUserId || 
+                                              User.IsInRole("Admin")))
+                                        {
+                                            <div class="btn-group btn-group-sm">
+                                                <a asp-action="Edit" asp-route-id="@review.ReviewId" class="btn btn-outline-primary btn-sm">Edit</a>
+                                                <a asp-action="Delete" asp-route-id="@review.ReviewId" class="btn btn-outline-danger btn-sm">Delete</a>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <h4>No Reviews Yet</h4>
+                    <p>Be the first to review this product!</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating {
+        font-size: 1.2em;
+    }
+    
+    .rating .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .rating .text-muted {
+        color: #6c757d !important;
+    }
+</style>
