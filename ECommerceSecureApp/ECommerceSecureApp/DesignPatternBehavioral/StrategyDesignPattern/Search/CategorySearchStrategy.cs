@@ -9,7 +9,7 @@ namespace ECommerceSecureApp.BehavioralDesignPattern.StrategyDesignPattern.Searc
         {
             if (!string.IsNullOrWhiteSpace(criteria.Category))
             {
-                products = products.Where(p => p.Category.Equals(criteria.Category, StringComparison.OrdinalIgnoreCase ));
+                products = products.Where(p => p.Category == criteria.Category);
             }
             return products;
         }

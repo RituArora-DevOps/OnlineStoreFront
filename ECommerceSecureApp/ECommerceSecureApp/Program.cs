@@ -1,6 +1,7 @@
 using ECommerceSecureApp.Data;
 using ECommerceSecureApp.Models;
 using ECommerceSecureApp.Repository;
+using ECommerceSecureApp.SeedData;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,21 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
 
+// for seeding the database with test data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<OnlineStoreDbContext>();
+
+    // Optional: apply pending migrations
+    context.Database.Migrate();
+
+    Console.WriteLine("Seeding started...");
+
+    // Seed your data
+    DbSeeder.Seed(context);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -48,14 +64,17 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+//app.UseSession(); // needed later when we enable cart/session 
 
 app.MapStaticAssets();
 
 // Default route configuration for MVC
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Products}/{action=Index}/{id?}")
+    pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 app.MapRazorPages()

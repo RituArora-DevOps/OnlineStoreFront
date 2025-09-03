@@ -1,8 +1,60 @@
-﻿@{
+﻿@model ECommerceSecureApp.ViewModel.ProductCatalogViewModel
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Product Catalog</h2>
+
+<form asp-action="Index" method="get">
+    <input asp-for="Name" placeholder="Search by name" />
+    <select asp-for="Category">
+        <option value="">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Grocery">Grocery</option>
+    </select>
+    <input asp-for="MinPrice" type="number" placeholder="Min Price" />
+    <input asp-for="MaxPrice" type="number" placeholder="Max Price" />
+    <button type="submit">Filter</button>
+</form>
+
+@foreach (var product in Model.PagedProducts.Items)
+{
+    <div class="product-card">
+        <h4>@product.Name</h4>
+        <p>@product.Description</p>
+        <p>Price: $@product.Price</p>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                <input type="hidden" name="productId" value="@product.ProductId" />
+                <button type="submit">Add to Cart</button>
+            </form>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Login">Login to Add to Cart</a>
+        }
+    </div>
+}
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= Model.PagedProducts.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.PagedProducts.PageNumber ? "active" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-page="@i"
+                   asp-route-name="@Model.Name"
+                   asp-route-category="@Model.Category"
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-maxPrice="@Model.MaxPrice">
+                    @i
+                </a>
+            </li>
+        }
+    </ul>
+</nav>
