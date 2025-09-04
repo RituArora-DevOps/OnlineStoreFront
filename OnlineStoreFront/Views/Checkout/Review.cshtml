@@ -1,0 +1,41 @@
+﻿@model OnlineStoreFront.Models.ViewModels.CartVM
+@{
+    ViewData["Title"] = "Review Order";
+    var addrJson = (string?)ViewBag.Address;
+}
+
+<h2>Review & Confirm</h2>
+
+@if (Model.Items.Any())
+{
+    <table class="table">
+        <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr>
+                    <td>@i.Name</td>
+                    <td>@i.UnitPrice.ToString("C")</td>
+                    <td>@i.Quantity</td>
+                    <td>@i.LineTotal.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-end">
+        <p>Subtotal: <strong>@Model.Subtotal.ToString("C")</strong></p>
+        <p>Tax: <strong>@Model.Tax.ToString("C")</strong></p>
+        <p>Shipping: <strong>@Model.Shipping.ToString("C")</strong></p>
+        <p>Total: <strong>@Model.Total.ToString("C")</strong></p>
+    </div>
+
+    <form method="post" action="/Checkout/PlaceOrder">
+        <button class="btn btn-success">Place Order</button>
+        <a class="btn btn-outline-secondary" href="/Checkout/Address">Change Address</a>
+    </form>
+}
+else
+{
+    <p>Your cart is empty.</p>
+}
