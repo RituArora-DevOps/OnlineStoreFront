@@ -1,4 +1,4 @@
-@model IEnumerable<OnlineStoreFront.Models.Business.ProductReview>
+@model IEnumerable<ECommerceSecureApp.Models.ProductReview>
 
 @{
     ViewData["Title"] = "All Reviews";
@@ -7,7 +7,8 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <h2>All Product Reviews</h2>
+            <h2>My Reviews</h2>
+            <p class="text-muted">View and manage your product reviews</p>
             <hr />
 
             @if (TempData["SuccessMessage"] != null)
@@ -23,6 +24,27 @@
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     @TempData["ErrorMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="alert alert-info">
+                    <h5>Welcome, @User.Identity.Name!</h5>
+                    <p>Here are all the reviews you've written. You can edit or delete your reviews, or <a asp-controller="Products" asp-action="Index" class="btn btn-primary btn-sm">Browse Products</a> to write new reviews.</p>
+                    <div class="mt-2">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <h5>Login Required</h5>
+                    <p>To create, edit, or delete reviews, please <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-sm">Login</a> or <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-sm">Register</a> first.</p>
+                    <div class="mt-2">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+                    </div>
                 </div>
             }
 
@@ -47,7 +69,7 @@
                                 <tr>
                                     <td>@review.ReviewId</td>
                                     <td>
-                                        <a asp-controller="Product" asp-action="Details" asp-route-id="@review.ProductId">
+                                        <a asp-controller="Products" asp-action="Details" asp-route-id="@review.ProductId">
                                             @review.Product?.Name
                                         </a>
                                     </td>
@@ -82,10 +104,19 @@
                                     </td>
                                     <td>@review.CreatedDate.ToString("MMM dd, yyyy")</td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a asp-action="Edit" asp-route-id="@review.ReviewId" class="btn btn-sm btn-outline-primary">Edit</a>
-                                            <a asp-action="Delete" asp-route-id="@review.ReviewId" class="btn btn-sm btn-outline-danger">Delete</a>
-                                        </div>
+                                        @if (User.Identity.IsAuthenticated && 
+                                             (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == review.ExternalUserId || 
+                                              User.IsInRole("Admin")))
+                                        {
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Edit" asp-route-id="@review.ReviewId" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                <a asp-action="Delete" asp-route-id="@review.ReviewId" class="btn btn-sm btn-outline-danger">Delete</a>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Login to manage</span>
+                                        }
                                     </td>
                                 </tr>
                             }

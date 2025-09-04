@@ -10,7 +10,7 @@ namespace ECommerceSecureApp.SeedData
         {
             List<Product> products;
 
-            // Seed Products
+            //Seed Products
             if (!context.Products.Any())
             {
                 Console.WriteLine("Seeding Products...");

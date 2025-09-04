@@ -19,26 +19,43 @@
     <button type="submit">Filter</button>
 </form>
 
-@foreach (var product in Model.PagedProducts.Items)
-{
-    <div class="product-card">
-        <h4>@product.Name</h4>
-        <p>@product.Description</p>
-        <p>Price: $@product.Price</p>
-
-        @if (User.Identity.IsAuthenticated)
-        {
-            <form asp-controller="Cart" asp-action="AddToCart" method="post">
-                <input type="hidden" name="productId" value="@product.ProductId" />
-                <button type="submit">Add to Cart</button>
-            </form>
-        }
-        else
-        {
-            <a asp-controller="Account" asp-action="Login">Login to Add to Cart</a>
-        }
-    </div>
-}
+<div class="row">
+    @foreach (var product in Model.PagedProducts.Items)
+    {
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 product-card">
+                <div class="card-body">
+                    <h5 class="card-title">@product.Name</h5>
+                    <p class="card-text">@product.Description</p>
+                    <p class="card-text">
+                        <span class="badge bg-primary">@product.Category</span>
+                    </p>
+                    <h6 class="text-success">$@product.Price.ToString("F2")</h6>
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-outline-primary btn-sm">View Details</a>
+                        <a asp-controller="Review" asp-action="ProductReviews" asp-route-productId="@product.ProductId" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-star"></i> Reviews
+                        </a>
+                        
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@product.ProductId" />
+                                <button type="submit" class="btn btn-success btn-sm">Add to Cart</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-secondary btn-sm">Login to Add to Cart</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 <nav>
     <ul class="pagination">
