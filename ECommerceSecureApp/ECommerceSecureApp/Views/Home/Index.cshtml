@@ -4,74 +4,107 @@
     ViewData["Title"] = "Home Page";
 }
 
-<h2>Product Catalog</h2>
-
-<form asp-action="Index" method="get">
-    <input asp-for="Name" placeholder="Search by name" />
-    <select asp-for="Category">
-        <option value="">All Categories</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Clothing">Clothing</option>
-        <option value="Grocery">Grocery</option>
-    </select>
-    <input asp-for="MinPrice" type="number" placeholder="Min Price" />
-    <input asp-for="MaxPrice" type="number" placeholder="Max Price" />
-    <button type="submit">Filter</button>
-</form>
-
-<div class="row">
-    @foreach (var product in Model.PagedProducts.Items)
-    {
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 product-card">
-                <div class="card-body">
-                    <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text">@product.Description</p>
-                    <p class="card-text">
-                        <span class="badge bg-primary">@product.Category</span>
-                    </p>
-                    <h6 class="text-success">$@product.Price.ToString("F2")</h6>
-                </div>
-                <div class="card-footer">
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a asp-controller="Review" asp-action="ProductReviews" asp-route-productId="@product.ProductId" class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-star"></i> Reviews
-                        </a>
-                        
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <form asp-controller="Cart" asp-action="AddToCart" method="post">
-                                <input type="hidden" name="productId" value="@product.ProductId" />
-                                <button type="submit" class="btn btn-success btn-sm">Add to Cart</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-secondary btn-sm">Login to Add to Cart</a>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+<div class="hero-banner text-white p-5 mb-4 rounded" style="background: linear-gradient(to right, #232f3e, #37475a);">
+    <h1>Welcome to ECommerceSecureApp</h1>
+    <p class="lead">Shop electronics, clothing, and groceries — all in one place.</p>
+    <a class="btn btn-warning btn-lg" asp-controller="Home" asp-action="Index">Start Shopping</a>
 </div>
 
-<nav>
-    <ul class="pagination">
-        @for (int i = 1; i <= Model.PagedProducts.TotalPages; i++)
-        {
-            <li class="page-item @(i == Model.PagedProducts.PageNumber ? "active" : "")">
-                <a class="page-link"
-                   asp-action="Index"
-                   asp-route-page="@i"
-                   asp-route-name="@Model.Name"
-                   asp-route-category="@Model.Category"
-                   asp-route-minPrice="@Model.MinPrice"
-                   asp-route-maxPrice="@Model.MaxPrice">
-                    @i
-                </a>
-            </li>
-        }
-    </ul>
-</nav>
+<div class="row">
+    <!-- Sidebar: Filters & Categories -->
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                Filters
+            </div>
+            <div class="card-body">
+                <form asp-action="Index" method="get">
+                    <div class="mb-3">
+                        <label class="form-label">Search</label>
+                        <input asp-for="Name" class="form-control" placeholder="Product name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Min Price</label>
+                        <input asp-for="MinPrice" type="number" class="form-control" placeholder="0" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Max Price</label>
+                        <input asp-for="MaxPrice" type="number" class="form-control" placeholder="1000" />
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-100">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Products: Right side -->
+    <div class="col-md-9">
+        <div class="row">
+            @foreach (var product in Model.PagedProducts.Items)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@Url.Action("ProductImage", "Picture", new { productId = product.ProductId })"
+                             class="card-img-top" alt="@product.Name" style="object-fit: cover; height: 200px;" />
+                        <div class="card-body">
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="card-text">@product.Description</p>
+                            <span class="badge bg-warning text-dark">@product.Category</span>
+                            <h6 class="text-success mt-2">$@product.Price.ToString("F2")</h6>
+                        </div>
+                        <div class="card-footer d-grid gap-2">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-outline-primary btn-sm">View Details</a>
+
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                    <input type="hidden" name="productId" value="@product.ProductId" />
+                                    <button type="submit" class="btn btn-success btn-sm">Add to Cart</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-secondary btn-sm">Login to Add</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.PagedProducts.PageNumber == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PagedProducts.PageNumber - 1)">Previous</a>
+                </li>
+
+                @for (int i = 1; i <= Model.PagedProducts.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PagedProducts.PageNumber ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-name="@Model.Name"
+                           asp-route-category="@Model.Category"
+                           asp-route-minPrice="@Model.MinPrice"
+                           asp-route-maxPrice="@Model.MaxPrice">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.PagedProducts.PageNumber == Model.PagedProducts.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PagedProducts.PageNumber + 1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+

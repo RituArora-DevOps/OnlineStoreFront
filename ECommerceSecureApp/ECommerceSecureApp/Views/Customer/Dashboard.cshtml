@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "My Account";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">My Account</h2>
+
+    <div class="row g-4">
+        <!-- Profile Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Profile</h5>
+                    <p><strong>Email:</strong> @User.Identity.Name</p>
+                    <a href="@Url.Action("Profile", "Customer")" class="btn btn-primary btn-sm mt-2">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Card -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Orders</h5>
+                    <table class="table table-hover table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in ViewBag.RecentOrders)
+                            {
+                                <tr>
+                                    <td>@order.Id</td>
+                                    <td>@order.Total.ToString("C")</td>
+                                    <td>@order.Date.ToShortDateString()</td>
+                                    <td>@order.Status</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4>My Reviews</h4>
+        <ul class="list-group">
+            @foreach (var review in ViewBag.MyReviews)
+            {
+                <li class="list-group-item">
+                    <strong>@review.ProductName:</strong> @review.Comment
+                </li>
+            }
+        </ul>
+    </div>
+</div>
