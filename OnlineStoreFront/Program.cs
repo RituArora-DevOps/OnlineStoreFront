@@ -4,17 +4,21 @@ using Microsoft.EntityFrameworkCore;
 using OnlineStoreFront.Data;
 using OnlineStoreFront.Models.Business;
 using OnlineStoreFront.Services;
-using Microsoft.AspNetCore.DataProtection;
 using System.IO;
+using ECommerceSecureApp.SeedData;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Identity DB
 var connectionString = builder.Configuration.GetConnectionString("SecureOnlineStoreContextConnection") ?? throw new InvalidOperationException("Connection string 'SecureOnlineStoreContextConnection' not found.");;
 
+// Itdentity + Auth
 builder.Services.AddDbContext<SecureOnlineStoreContext>(options => options.UseSqlServer(connectionString));
-
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<SecureOnlineStoreContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>(options => { 
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddRoles<IdentityRole>()    // To enable roles
+.AddEntityFrameworkStores<SecureOnlineStoreContext>();
 
 // Business DbContext (OnlineStore)
 var businessConnectionString = builder.Configuration.GetConnectionString("OnlineStoreContextConnection") ?? throw new InvalidOperationException("Connection string 'OnlineStoreContextConnection' not found."); ;
@@ -43,9 +47,14 @@ builder.Services.ConfigureApplicationCookie(o =>
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 
-
-
 var app = builder.Build();
+
+// Role seeding block
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await RoleSeeder.SeedRolesAndAdminAsync(services);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -71,5 +80,4 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
-
-app.Run();
+await app.RunAsync();

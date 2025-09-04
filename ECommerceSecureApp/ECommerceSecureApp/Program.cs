@@ -25,6 +25,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => {
     //2FA uses autheticator token provider:
     options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
     })
+    .AddRoles<IdentityRole>() // Add roles
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add services for Razor Pages and MVC controllers with views
@@ -61,6 +62,13 @@ builder.Services.ConfigureApplicationCookie(o =>
 
 
 var app = builder.Build();
+
+// Seed roles and admin user
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await RoleSeeder.SeedRolesAndAdminAsync(services);
+}
 
 // for seeding the database with test data
 using (var scope = app.Services.CreateScope())
