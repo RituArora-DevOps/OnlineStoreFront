@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OnlineStoreFront.Data;
 using OnlineStoreFront.Models.Business;
 using OnlineStoreFront.Services;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Identity DB
@@ -23,6 +27,23 @@ builder.Services.AddScoped<ReviewService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Shared key ring + cookie so both apps recognize the same login
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"C:\KeyRing")) // same path in BOTH apps
+    .SetApplicationName("OnlineStoreSuite");                    // same name in BOTH apps
+
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.Cookie.Name = ".OnlineStore.Auth";        // same name in BOTH apps
+    o.LoginPath = "/Identity/Account/Login";    // Auth UI lives here
+    o.SlidingExpiration = true;
+});
+
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+
+
 
 var app = builder.Build();
 

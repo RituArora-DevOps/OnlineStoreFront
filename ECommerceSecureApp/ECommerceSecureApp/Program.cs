@@ -4,6 +4,9 @@ using ECommerceSecureApp.Repository;
 using ECommerceSecureApp.SeedData;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +33,28 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 // This tells ASP.NET - whenever a controller asks for IProductRepository, give them an instance of ProductRepository.
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+// Enable Session for guest carts
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(o =>
+{
+    o.Cookie.Name = ".OnlineStore.Session";
+    o.IdleTimeout = TimeSpan.FromHours(12);
+    o.Cookie.HttpOnly = true;
+});
+
+// Share the same auth keys/cookie with the Auth app
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"C:\KeyRing")) // same path as the Auth app
+    .SetApplicationName("OnlineStoreSuite");                    // same name as the Auth app
+
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.Cookie.Name = ".OnlineStore.Auth";        // same cookie name as the Auth app
+    o.LoginPath = "/Identity/Account/Login";    // or the full URL of the Auth app¡¯s login
+    o.SlidingExpiration = true;
+});
+
 
 var app = builder.Build();
 
