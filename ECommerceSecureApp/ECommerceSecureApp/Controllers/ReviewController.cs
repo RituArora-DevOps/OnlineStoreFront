@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OnlineStoreFront.Models.Business;
-using OnlineStoreFront.Services;
+using ECommerceSecureApp.Models;
+using ECommerceSecureApp.Services;
 using System.Security.Claims;
 
-namespace OnlineStoreFront.Controllers
+namespace ECommerceSecureApp.Controllers
 {
     // Controller for handling product review operations in the online store system
     // Provides endpoints for creating, reading, updating, and deleting product reviews
@@ -14,12 +14,12 @@ namespace OnlineStoreFront.Controllers
         // Service that handles all the review business logic
         private readonly ReviewService _reviewService;
         // Database context for direct database access when needed
-        private readonly OnlineStoreContext _context;
+        private readonly OnlineStoreDbContext _context;
         // Logger for tracking what the controller is doing
         private readonly ILogger<ReviewController> _logger;
 
         // Constructor - gets services from dependency injection
-        public ReviewController(ReviewService reviewService, OnlineStoreContext context, ILogger<ReviewController> logger)
+        public ReviewController(ReviewService reviewService, OnlineStoreDbContext context, ILogger<ReviewController> logger)
         {
             _reviewService = reviewService;
             _context = context;
@@ -45,7 +45,35 @@ namespace OnlineStoreFront.Controllers
             }
         }
 
+        // Displays user's own reviews (Logged-in users only)
+        [Authorize]
+        public async Task<IActionResult> AllReviews()
+        {
+            try
+            {
+                // Get the current user's ID
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "User not authenticated.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Get only the current user's reviews
+                var reviews = await _reviewService.GetReviewsByUserAsync(userId);
+                return View("Index", reviews);
+            }
+            catch (Exception ex)
+            {
+                // Log the error and show user-friendly message
+                _logger.LogError(ex, "Error retrieving user reviews");
+                TempData["ErrorMessage"] = "An error occurred while retrieving your reviews.";
+                return View("Index", new List<ProductReview>());
+            }
+        }
+
         // Displays reviews for a specific product
+        [AllowAnonymous]
         public async Task<IActionResult> ProductReviews(int productId)
         {
             try

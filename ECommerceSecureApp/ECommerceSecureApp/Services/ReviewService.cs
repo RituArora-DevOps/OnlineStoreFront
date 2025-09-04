@@ -1,18 +1,18 @@
 using Microsoft.EntityFrameworkCore;
-using OnlineStoreFront.Models.Business;
+using ECommerceSecureApp.Models;
 
-namespace OnlineStoreFront.Services
+namespace ECommerceSecureApp.Services
 {
     // Service for managing product reviews in the online store
     public class ReviewService
     {
         // Database connection for accessing product reviews
-        private readonly OnlineStoreContext _context;
+        private readonly OnlineStoreDbContext _context;
         // Logger for tracking what the service is doing
         private readonly ILogger<ReviewService> _logger;
 
         // Constructor - gets database and logger from dependency injection
-        public ReviewService(OnlineStoreContext context, ILogger<ReviewService> logger)
+        public ReviewService(OnlineStoreDbContext context, ILogger<ReviewService> logger)
         {
             _context = context;
             _logger = logger;

@@ -1,54 +1,120 @@
 ﻿@model ECommerceSecureApp.Models.Product
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Product Details";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Product</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ModifiedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ModifiedDate)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.ProductId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>@Model.Name</h1>
+            <hr />
+            
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">
+                            @Html.DisplayNameFor(model => model.Price)
+                        </dt>
+                        <dd class="col-sm-9">
+                            <strong class="text-success">$@Html.DisplayFor(model => model.Price)</strong>
+                        </dd>
+                        <dt class="col-sm-3">
+                            @Html.DisplayNameFor(model => model.Category)
+                        </dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-primary">@Html.DisplayFor(model => model.Category)</span>
+                        </dd>
+                        <dt class="col-sm-3">
+                            @Html.DisplayNameFor(model => model.Description)
+                        </dt>
+                        <dd class="col-sm-9">
+                            @Html.DisplayFor(model => model.Description)
+                        </dd>
+                        <dt class="col-sm-3">
+                            @Html.DisplayNameFor(model => model.CreatedDate)
+                        </dt>
+                        <dd class="col-sm-9">
+                            @Html.DisplayFor(model => model.CreatedDate)
+                        </dd>
+                        @if (Model.ModifiedDate.HasValue)
+                        {
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.ModifiedDate)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.ModifiedDate)
+                            </dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Actions</h5>
+                    <div class="d-grid gap-2">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                <input type="hidden" name="productId" value="@Model.ProductId" />
+                                <button type="submit" class="btn btn-success">Add to Cart</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-secondary">Login to Add to Cart</a>
+                        }
+                        
+                        <a asp-controller="Review" asp-action="ProductReviews" asp-route-productId="@Model.ProductId" class="btn btn-outline-info">
+                            <i class="fas fa-star"></i> View Reviews
+                        </a>
+                        
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-controller="Review" asp-action="Create" asp-route-productId="@Model.ProductId" class="btn btn-outline-warning">
+                                <i class="fas fa-edit"></i> Write a Review
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Customer Reviews</h3>
+                <a asp-controller="Review" asp-action="ProductReviews" asp-route-productId="@Model.ProductId" class="btn btn-outline-primary">
+                    View All Reviews
+                </a>
+            </div>
+            <hr />
+            
+            <!-- Quick review preview could go here -->
+            <div class="alert alert-info">
+                <p>Want to see what other customers think about this product?</p>
+                <a asp-controller="Review" asp-action="ProductReviews" asp-route-productId="@Model.ProductId" class="btn btn-primary">
+                    Read Customer Reviews
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-12">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model?.ProductId" class="btn btn-outline-warning">
+                    <i class="fas fa-edit"></i> Edit Product
+                </a>
+            }
+        </div>
+    </div>
 </div>
