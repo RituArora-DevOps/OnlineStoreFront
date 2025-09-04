@@ -115,7 +115,23 @@ namespace ECommerceSecureApp.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+
+                    // Find the user to check roles
+                    var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+
+                    if (await _signInManager.UserManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        return LocalRedirect(Url.Content("~/Admin/Dashboard"));
+                    }
+                    else if (await _signInManager.UserManager.IsInRoleAsync(user, "Customer"))
+                    {
+                        return LocalRedirect(Url.Content("~/Customer/Dashboard"));
+                    }
+                    else
+                    {
+                        // fallback
+                        return LocalRedirect(returnUrl);
+                    }
                 }
                 if (result.RequiresTwoFactor)
                 {

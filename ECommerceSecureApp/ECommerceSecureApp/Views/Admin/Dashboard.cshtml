@@ -1,0 +1,22 @@
+﻿@* Admin Dashboard *@
+<h2>Admin Dashboard</h2>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Manage Products</h5>
+                <p class="card-text">Add, edit, or remove products from the catalog.</p>
+                <a class="btn btn-primary" asp-controller="Products" asp-action="Index">Go to Products</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Review Moderation</h5>
+                <p class="card-text">View and manage customer reviews.</p>
+                <a class="btn btn-secondary" asp-controller="Review" asp-action="Index">Go to Reviews</a>
+            </div>
+        </div>
+    </div>
+</div>

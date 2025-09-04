@@ -38,6 +38,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Register services
 builder.Services.AddScoped<ReviewService>();
+builder.Services.AddScoped<IPictureRepository, PictureRepository>();
 
 // Enable Session for guest carts
 builder.Services.AddDistributedMemoryCache();
@@ -60,6 +61,9 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.SlidingExpiration = true;
 });
 
+// to call the API inmy seeder
+builder.Services.AddHttpClient();
+
 
 var app = builder.Build();
 
@@ -70,20 +74,31 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeder.SeedRolesAndAdminAsync(services);
 }
 
-// for seeding the database with test data
+//for seeding the database with test data
 using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<OnlineStoreDbContext>();
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<OnlineStoreDbContext>();
 
-    // Optional: apply pending migrations
-    context.Database.Migrate();
+        // Optional: apply pending migrations
+        context.Database.Migrate();
 
-    Console.WriteLine("Seeding started...");
+        Console.WriteLine("Seeding started...");
 
-    // Seed your data
-    DbSeeder.Seed(context);
-}
+        // Seed your data
+        DbSeeder.Seed(context);
+    }
+
+// call the seeder
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    var context = services.GetRequiredService<OnlineStoreDbContext>();
+//    var httpClient = services.GetRequiredService<HttpClient>();
+//    var seeder = new ECommerceSecureApp.SeedData.ExternalProductSeeder(context, httpClient);
+//    await seeder.SeedAsync();
+//}
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -96,6 +111,8 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

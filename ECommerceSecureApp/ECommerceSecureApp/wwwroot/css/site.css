@@ -18,7 +18,9 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: #131921;
+    color: #fff;
+    margin-bottom: 60px;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -28,4 +30,64 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+.card-img-top {
+    object-fit: cover;
+    height: 200px;
+    border-bottom: 1px solid #eee;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+}
+
+.nav-link:hover {
+    color: #ffc107 !important;
+}
+
+footer h6 {
+    font-weight: 600;
+}
+
+
+.product-card {
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        transition: all 0.3s ease-in-out;
+    }
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-warning {
+    background-color: #febd69;
+    border-color: #febd69;
+}
+
+.btn-warning:hover {
+    background-color: #f3a847;
+    border-color: #f3a847;
+}
+
+.category-bar .btn:hover {
+    background-color: #f0c14b; /* Amazon yellow */
+    color: #111;
+    border-color: #a88734;
+}
+
+.category-bar {
+    flex-wrap: nowrap;
+}
+
+.hero-banner {
+    margin-top: 1.5rem; /* space between navbar and hero */
 }
