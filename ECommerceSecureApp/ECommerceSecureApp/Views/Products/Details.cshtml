@@ -37,4 +37,142 @@
             </div>
         </div>
     </div>
+
+    <!-- Reviews Section -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-dark text-white">
+            <h4>Customer Reviews</h4>
+        </div>
+        <div class="card-body">
+            @{
+                var reviews = ViewBag.Reviews as List<ECommerceSecureApp.Models.ProductReview>;
+                var averageRating = ViewBag.AverageRating as double?;
+                var reviewCount = ViewBag.ReviewCount as int?;
+            }
+
+            @if (averageRating.HasValue && reviewCount > 0)
+            {
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Overall Rating</h5>
+                        <div class="rating-display">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= Math.Round(averageRating.Value))
+                                {
+                                    <span class="text-warning">★</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">☆</span>
+                                }
+                            }
+                            <span class="ms-2">@averageRating.Value.ToString("F1") out of 5</span>
+                        </div>
+                        <p class="text-muted">Based on @reviewCount review(s)</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a asp-controller="Review" asp-action="Create" asp-route-productId="@Model.ProductId" class="btn btn-primary">
+                                <i class="fas fa-star"></i> Write a Review
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Login to write a review</a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center mb-4">
+                    <h5>No Reviews Yet</h5>
+                    <p class="text-muted">Be the first to review this product!</p>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a asp-controller="Review" asp-action="Create" asp-route-productId="@Model.ProductId" class="btn btn-primary">
+                            <i class="fas fa-star"></i> Write a Review
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Login to write a review</a>
+                    }
+                </div>
+            }
+
+            @if (reviews != null && reviews.Any())
+            {
+                <div class="reviews-list">
+                    @foreach (var review in reviews.Take(5)) // Show only first 5 reviews
+                    {
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <span class="text-warning">★</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">☆</span>
+                                            }
+                                        }
+                                    </div>
+                                    <small class="text-muted">@review.CreatedDate.ToString("MMM dd, yyyy")</small>
+                                </div>
+                                
+                                @if (!string.IsNullOrEmpty(review.Comment))
+                                {
+                                    <p class="card-text">@review.Comment</p>
+                                }
+                                
+                                @if (User.Identity.IsAuthenticated && 
+                                     (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == review.ExternalUserId || 
+                                      User.IsInRole("Admin")))
+                                {
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-controller="Review" asp-action="Edit" asp-route-id="@review.ReviewId" class="btn btn-outline-primary btn-sm">Edit</a>
+                                        <a asp-controller="Review" asp-action="Delete" asp-route-id="@review.ReviewId" class="btn btn-outline-danger btn-sm">Delete</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (reviews.Count > 5)
+                {
+                    <div class="text-center">
+                        <a asp-controller="Review" asp-action="ProductReviews" asp-route-productId="@Model.ProductId" class="btn btn-outline-secondary">
+                            View All @reviews.Count Reviews
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
 </div>
+
+<style>
+    .rating-display {
+        font-size: 1.5em;
+    }
+    
+    .rating {
+        font-size: 1.2em;
+    }
+    
+    .rating .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .rating .text-muted {
+        color: #6c757d !important;
+    }
+</style>

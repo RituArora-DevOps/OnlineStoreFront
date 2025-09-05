@@ -8,17 +8,20 @@ using Microsoft.EntityFrameworkCore;
 using ECommerceSecureApp.Models;
 using ECommerceSecureApp.Repository;
 using ECommerceSecureApp.BehavioralDesignPattern.StrategyDesignPattern.Search;
+using ECommerceSecureApp.Services;
 
 namespace ECommerceSecureApp.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly IProductRepository _productRepository;
+        private readonly ReviewService _reviewService;
         
         // Follows Dependency Inversion principle
-        public ProductsController(IProductRepository productRepository)
+        public ProductsController(IProductRepository productRepository, ReviewService reviewService)
         {
             _productRepository = productRepository;
+            _reviewService = reviewService;
         }
 
         private void PopulateCategoryList()
@@ -62,6 +65,15 @@ namespace ECommerceSecureApp.Controllers
             {
                 return NotFound();
             }
+
+            // Get reviews for this product
+            var reviews = await _reviewService.GetPublicReviewsByProductAsync(id.Value);
+            var averageRating = await _reviewService.GetAverageRatingAsync(id.Value);
+            var reviewCount = await _reviewService.GetReviewCountAsync(id.Value);
+
+            ViewBag.Reviews = reviews;
+            ViewBag.AverageRating = averageRating;
+            ViewBag.ReviewCount = reviewCount;
 
             return View(product);
         }

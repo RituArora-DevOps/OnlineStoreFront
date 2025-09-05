@@ -254,10 +254,10 @@ namespace ECommerceSecureApp.Services
 
             var reviews = await _context.ProductReviews
                 .Where(r => r.ProductId == productId && r.Rating.HasValue)
-                .Select(r => r.Rating.Value)
+                .Select(r => r.Rating!.Value)
                 .ToListAsync();
 
-            return reviews.Count > 0 ? reviews.Average() : null;
+            return reviews.Count > 0 ? reviews.Average() : (double?)null;
         }
 
         // Gets the total number of reviews for a product
@@ -270,6 +270,46 @@ namespace ECommerceSecureApp.Services
 
             return await _context.ProductReviews
                 .CountAsync(r => r.ProductId == productId);
+        }
+
+        // Checks if a user has purchased a specific product
+        public async Task<bool> HasUserPurchasedProductAsync(string userId, int productId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID must be specified", nameof(userId));
+            }
+
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be greater than 0", nameof(productId));
+            }
+
+            // Check if user has any completed orders containing this product
+            var hasPurchased = await _context.Orders
+                .Where(o => o.ExternalUserId == userId)
+                .Where(o => o.OrderStatusId == 3) // Assuming 3 is "Completed" status
+                .AnyAsync(o => o.OrderItems.Any(oi => oi.ProductId == productId));
+
+            _logger.LogInformation("User {UserId} purchase check for product {ProductId}: {HasPurchased}", 
+                userId, productId, hasPurchased);
+
+            return hasPurchased;
+        }
+
+        // Gets reviews for a product that are visible to all users (public reviews)
+        public async Task<List<ProductReview>> GetPublicReviewsByProductAsync(int productId)
+        {
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be greater than 0", nameof(productId));
+            }
+
+            return await _context.ProductReviews
+                .Include(r => r.Product)
+                .Where(r => r.ProductId == productId)
+                .OrderByDescending(r => r.CreatedDate)
+                .ToListAsync();
         }
     }
 }
