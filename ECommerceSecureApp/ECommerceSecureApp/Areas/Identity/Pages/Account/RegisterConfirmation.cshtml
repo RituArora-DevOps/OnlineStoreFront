@@ -1,23 +1,38 @@
 ﻿@page
 @model RegisterConfirmationModel
 @{
-    ViewData["Title"] = "Register confirmation";
+    ViewData["Title"] = "Register Confirmation";
 }
 
-<h1>@ViewData["Title"]</h1>
-@{
-    if (@Model.DisplayConfirmAccountLink)
-    {
-<p>
-    This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-    Normally this would be emailed: <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
-</p>
-    }
-    else
-    {
-<p>
-        Please check your email to confirm your account.
-</p>
-    }
-}
-
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-dark text-white text-center">
+                    <h3 class="mb-0">Registration Successful</h3>
+                </div>
+                <div class="card-body text-center p-4">
+                    @if (Model.DisplayConfirmAccountLink)
+                    {
+                        <p class="mb-3">
+                            This app does not currently have a real email sender configured.
+                            See <a href="https://aka.ms/aspaccountconf" target="_blank">these docs</a> for how to set one up.
+                        </p>
+                        <p>
+                            Normally you would receive a confirmation email, but for now you can confirm manually:
+                        </p>
+                        <a id="confirm-link" href="@Model.EmailConfirmationUrl" class="btn btn-warning fw-bold">
+                            Confirm My Account
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="mb-3">
+                            Please check your email and click the confirmation link to activate your account.
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
