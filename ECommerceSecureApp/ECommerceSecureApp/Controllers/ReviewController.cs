@@ -169,6 +169,14 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
+                // Check if user has purchased this product
+                var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
+                if (!hasPurchased)
+                {
+                    TempData["ErrorMessage"] = "You can only review products you have purchased.";
+                    return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                }
+
                 // Check if this user already reviewed this product
                 var existingReview = await _context.ProductReviews
                     .FirstOrDefaultAsync(r => r.ProductId == review.ProductId && r.ExternalUserId == userId);
@@ -221,6 +229,17 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
                 }
 
+                // Check if user has purchased this product (unless admin)
+                if (!isAdmin && !string.IsNullOrEmpty(userId))
+                {
+                    var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
+                    if (!hasPurchased)
+                    {
+                        TempData["ErrorMessage"] = "You can only edit reviews for products you have purchased.";
+                        return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                    }
+                }
+
                 return View(review);
             }
             catch (Exception ex)
@@ -267,6 +286,17 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
                 }
 
+                // Check if user has purchased this product (unless admin)
+                if (!isAdmin && !string.IsNullOrEmpty(userId))
+                {
+                    var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
+                    if (!hasPurchased)
+                    {
+                        TempData["ErrorMessage"] = "You can only edit reviews for products you have purchased.";
+                        return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                    }
+                }
+
                 await _reviewService.UpdateReviewAsync(review);
 
                 TempData["SuccessMessage"] = "Your review has been updated successfully.";
@@ -301,6 +331,17 @@ namespace ECommerceSecureApp.Controllers
                 {
                     TempData["ErrorMessage"] = "You can only delete your own reviews.";
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                }
+
+                // Check if user has purchased this product (unless admin)
+                if (!isAdmin && !string.IsNullOrEmpty(userId))
+                {
+                    var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
+                    if (!hasPurchased)
+                    {
+                        TempData["ErrorMessage"] = "You can only delete reviews for products you have purchased.";
+                        return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                    }
                 }
 
                 return View(review);
