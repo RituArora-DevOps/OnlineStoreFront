@@ -40,7 +40,6 @@
         </div>
     </div>
 
-
     <!-- Products: Right side -->
     <div class="col-md-9">
         <div class="row">
@@ -58,10 +57,16 @@
                         <div class="card-footer d-grid gap-2">
                             <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId"
                                class="btn btn-outline-warning btn-sm text-dark">View Details</a>
+
                             @if (User.Identity.IsAuthenticated)
                             {
-                                <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                <!-- AJAX add-to-cart: stays on page, shows toast -->
+                                <form asp-controller="Cart" asp-action="Add" method="post"
+                                      class="d-inline js-add-to-cart"
+                                      data-product-name="@product.Name">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="productId" value="@product.ProductId" />
+                                    <input type="hidden" name="quantity" value="1" />
                                     <button type="submit" class="btn btn-success btn-sm">Add to Cart</button>
                                 </form>
                             }
@@ -74,8 +79,6 @@
                 </div>
             }
         </div>
-
-
 
         <!-- Pagination -->
         <nav aria-label="Page navigation">
@@ -103,8 +106,6 @@
                     <a class="page-link bg-dark text-warning" asp-action="Index" asp-route-page="@(Model.PagedProducts.PageNumber + 1)">Next</a>
                 </li>
             </ul>
-
         </nav>
     </div>
 </div>
-

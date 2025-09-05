@@ -1,0 +1,128 @@
+﻿@model ECommerceSecureApp.Models.ViewModels.CartVM
+@{
+    ViewData["Title"] = "Your Cart";
+}
+
+<div class="cart-surface">
+    <h2 class="mb-3">Your Cart</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Warning"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (!Model.Items.Any())
+    {
+        <div class="border rounded p-4 bg-white">
+            <p class="mb-3">Your cart is empty.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Start Shopping</a>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+            <form asp-action="ApplyCoupon" method="post" class="d-flex gap-2">
+                <input type="text"
+                       name="couponCode"
+                       value="@Model.AppliedCoupon"
+                       class="form-control"
+                       placeholder="Coupon code (e.g., SAVE10)" />
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </form>
+
+            @if (!string.IsNullOrWhiteSpace(Model.AppliedCoupon))
+            {
+                <form asp-action="ClearCoupon" method="post">
+                    <button type="submit" class="btn btn-outline-secondary">Clear Coupon</button>
+                </form>
+            }
+
+            <form asp-action="Clear" method="post" class="ms-auto">
+                <input type="hidden" name="cartId" value="@Model.CartId" />
+                <button type="submit" class="btn btn-outline-danger">Clear Cart</button>
+            </form>
+        </div>
+
+        <div class="table-responsive border rounded bg-white p-2">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="text-end">Unit (Orig)</th>
+                        <th class="text-end">Unit (Disc)</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Line (Disc)</th>
+                        <th class="text-end">Saved</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td class="text-end">@item.OriginalUnitPrice.ToString("C")</td>
+                            <td class="text-end">@item.DiscountedUnitPrice.ToString("C")</td>
+                            <td class="text-center">
+                                <form asp-action="UpdateQuantity" method="post" class="d-inline">
+                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                    <div class="input-group input-group-sm" style="max-width: 160px;">
+                                        <input type="number"
+                                               class="form-control"
+                                               name="quantity"
+                                               value="@item.Quantity"
+                                               min="0" />
+                                        <button type="submit" class="btn btn-primary">Update</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td class="text-end">@item.DiscountedLineTotal.ToString("C")</td>
+                            <td class="text-end text-success">-@item.LineDiscount.ToString("C")</td>
+                            <td class="text-end">
+                                <form asp-action="Remove" method="post">
+                                    <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" class="text-end">Subtotal (Original)</th>
+                        <th class="text-end">@Model.SubtotalOriginal.ToString("C")</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th colspan="4" class="text-end">Discounts</th>
+                        <th class="text-end text-success">-@Model.DiscountTotal.ToString("C")</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th colspan="4" class="text-end">Total</th>
+                        <th class="text-end">@Model.Total.ToString("C")</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Continue Shopping</a>
+            <a asp-action="Checkout" class="btn btn-success">
+                Proceed to Checkout
+            </a>
+        </div>
+    }
+</div>

@@ -91,3 +91,85 @@ footer h6 {
 .hero-banner {
     margin-top: 1.5rem; /* space between navbar and hero */
 }
+
+/* === Checkout light text overrides === */
+.checkout-surface {
+    /* Reset Bootstrap color tokens inside this area */
+    --bs-body-color: #111;
+    --bs-heading-color: #111;
+    --bs-secondary-color: #6c757d;
+    color: #111;
+}
+
+    /* Headings, labels, and general text */
+    .checkout-surface h1,
+    .checkout-surface h2,
+    .checkout-surface h3,
+    .checkout-surface h4,
+    .checkout-surface h5,
+    .checkout-surface h6,
+    .checkout-surface label,
+    .checkout-surface .form-check-label,
+    .checkout-surface .table,
+    .checkout-surface .table th,
+    .checkout-surface .table td {
+        color: #111 !important;
+    }
+
+    /* Inputs/selects text & placeholders */
+    .checkout-surface .form-control,
+    .checkout-surface .form-select {
+        color: #111 !important;
+        background-color: #fff; /* readable against dark site bg */
+        border-color: #ced4da;
+    }
+
+        .checkout-surface .form-control::placeholder {
+            color: #6c757d !important;
+        }
+
+    /* Radios/checkboxes */
+    .checkout-surface .form-check-input {
+        background-color: #fff;
+        border-color: #6c757d;
+    }
+        /* Checked state */
+        .checkout-surface .form-check-input:checked {
+            background-color: #0d6efd !important; /* Bootstrap primary */
+            border-color: #0d6efd !important;
+        }
+
+        /* Focus ring */
+        .checkout-surface .form-check-input:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 .25rem rgba(13,110,253,.25);
+        }
+
+        /* (Optional) make the label look selected when the radio is checked */
+        .checkout-surface .form-check-input:checked + .form-check-label {
+            color: #111;
+            font-weight: 600;
+        }
+
+    /* Muted helper text in this area */
+    .checkout-surface .text-muted {
+        color: #6c757d !important;
+    }
+
+/* === Cart light text overrides (empty cart, etc.) === */
+.cart-surface {
+    --bs-body-color: #111;
+    --bs-heading-color: #111;
+    color: #111;
+}
+
+    .cart-surface p,
+    .cart-surface h1,
+    .cart-surface h2,
+    .cart-surface h3,
+    .cart-surface h4,
+    .cart-surface h5,
+    .cart-surface h6,
+    .cart-surface label {
+        color: #111 !important;
+    }

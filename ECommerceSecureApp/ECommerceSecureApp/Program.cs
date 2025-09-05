@@ -3,11 +3,12 @@ using ECommerceSecureApp.Models;
 using ECommerceSecureApp.Repository;
 using ECommerceSecureApp.SeedData;
 using ECommerceSecureApp.Services;
+using ECommerceSecureApp.Services.Pricing;   // price calculator for discounts
+using ECommerceSecureApp.Services.Coupons;   // coupon code -> amount resolver
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using System.IO;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +25,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => {
     options.SignIn.RequireConfirmedAccount = false;
     //2FA uses autheticator token provider:
     options.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
-    })
+})
     .AddRoles<IdentityRole>() // Add roles
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -33,14 +34,25 @@ builder.Services.AddControllersWithViews();
 
 // Register repositories in DI
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-// This tells ASP.NET - whenever a controller asks for IProductRepository, give them an instance of ProductRepository.
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-
-// Register services
-builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<IPictureRepository, PictureRepository>();
 
-// Enable Session for guest carts
+// ===== Cart / Order / Payment repositories =====
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+
+// ===== Discount & Coupon services =====
+// PriceCalculator uses your Decorator (BaseProduct, CouponDiscount, SeasonalDiscount)
+builder.Services.AddScoped<IPriceCalculator, PriceCalculator>();
+// Coupon service maps coupon code -> fixed amount required by CouponDiscount
+builder.Services.AddScoped<ICouponService, InMemoryCouponService>();
+
+// Other app services
+builder.Services.AddScoped<ReviewService>();
+
+// Enable Session for guest carts / coupons
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(o =>
 {
@@ -57,12 +69,13 @@ builder.Services.AddDataProtection()
 builder.Services.ConfigureApplicationCookie(o =>
 {
     o.Cookie.Name = ".OnlineStore.Auth";        // same cookie name as the Auth app
-    o.LoginPath = "/Identity/Account/Login";    // or the full URL of the Auth app��s login
+    o.LoginPath = "/Identity/Account/Login";    // or the full URL of the Auth app’s login
     o.SlidingExpiration = true;
 });
 
-// to call the API inmy seeder
+// to call the API in my seeder
 builder.Services.AddHttpClient();
+
 
 
 var app = builder.Build();
@@ -74,31 +87,20 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeder.SeedRolesAndAdminAsync(services);
 }
 
-//for seeding the database with test data
+// for seeding the database with test data
 using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<OnlineStoreDbContext>();
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<OnlineStoreDbContext>();
 
-        // Optional: apply pending migrations
-        context.Database.Migrate();
+    // Optional: apply pending migrations
+    context.Database.Migrate();
 
-        Console.WriteLine("Seeding started...");
+    Console.WriteLine("Seeding started...");
 
-        // Seed your data
-        DbSeeder.Seed(context);
-    }
-
-// call the seeder
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    var context = services.GetRequiredService<OnlineStoreDbContext>();
-//    var httpClient = services.GetRequiredService<HttpClient>();
-//    var seeder = new ECommerceSecureApp.SeedData.ExternalProductSeeder(context, httpClient);
-//    await seeder.SeedAsync();
-//}
-
+    // Seed your data
+    DbSeeder.Seed(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -112,16 +114,16 @@ else
     app.UseHsts();
 }
 
-
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+// Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.UseSession(); // needed later when we enable cart/session 
+// ===== Enable Session (uncommented) =====
+app.UseSession();
 
 app.MapStaticAssets();
 
