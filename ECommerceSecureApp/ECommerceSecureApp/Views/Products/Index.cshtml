@@ -1,57 +1,48 @@
 ﻿@model ECommerceSecureApp.Models.Utility.PagedResult<ECommerceSecureApp.Models.Product>
-
 @{
-    ViewData["Title"] = "Index";
-}
-
-@{
+    ViewData["Title"] = "Manage Products";
     var dummy = new ECommerceSecureApp.Models.Product();
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between text-black mb-3">
+        <h2>Manage Products</h2>
+        <a asp-action="Create" class="btn btn-warning">+ Create New</a>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => dummy.Price)</th>
-            <th>@Html.DisplayNameFor(model => dummy.Category)</th>
-            <th>@Html.DisplayNameFor(model => dummy.Name)</th>
-            <th>@Html.DisplayNameFor(model => dummy.Description)</th>
-            <th>@Html.DisplayNameFor(model => dummy.CreatedDate)</th>
-            <th>@Html.DisplayNameFor(model => dummy.ModifiedDate)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Items) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ModifiedDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ProductId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ProductId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ProductId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>@Html.DisplayNameFor(m => dummy.Name)</th>
+                        <th>@Html.DisplayNameFor(m => dummy.Category)</th>
+                        <th>@Html.DisplayNameFor(m => dummy.Price)</th>
+                        <th>@Html.DisplayNameFor(m => dummy.Description)</th>
+                        <th>@Html.DisplayNameFor(m => dummy.CreatedDate)</th>
+                        <th>@Html.DisplayNameFor(m => dummy.ModifiedDate)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td><span class="badge bg-warning">@item.Category</span></td>
+                            <td class="text-success">$@item.Price.ToString("F2")</td>
+                            <td>@item.Description</td>
+                            <td>@item.CreatedDate</td>
+                            <td>@item.ModifiedDate</td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-info">Details</a>
+                                <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-warning">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -24,7 +24,7 @@ namespace ECommerceSecureApp.Controllers
                 return File(picture.PictureData, "image/jpeg");
             }
 
-            var fallbackPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products/no-image.png");
+            var fallbackPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/no-image.png");
             var fallbackBytes = System.IO.File.ReadAllBytes(fallbackPath);
             return File(fallbackBytes, "image/png");
         }
