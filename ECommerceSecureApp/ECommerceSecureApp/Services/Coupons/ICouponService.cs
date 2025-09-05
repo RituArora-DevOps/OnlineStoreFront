@@ -2,6 +2,7 @@
 {
     public interface ICouponService
     {
-        decimal ResolveCouponAmount(string? code);
+        // Return coupon info; if unknown/invalid, return null or Info with IsValid=false
+        CouponInfo? Resolve(string? code);
     }
 }

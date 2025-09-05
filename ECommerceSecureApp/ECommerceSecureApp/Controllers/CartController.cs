@@ -49,9 +49,10 @@ namespace ECommerceSecureApp.Controllers
             SetSessionCartId(cart.CartId);
 
             var couponCode = GetCoupon();
-            var couponAmount = _couponSvc.ResolveCouponAmount(couponCode);
+            var coupon = _couponSvc.Resolve(couponCode); 
 
             var items = await _cartRepo.GetItemsAsync(cart.CartId);
+
             var vm = new CartVM
             {
                 CartId = cart.CartId,
@@ -60,7 +61,10 @@ namespace ECommerceSecureApp.Controllers
                 {
                     var p = ci.Product;
                     var orig = p.Price;
-                    var discUnit = _priceCalc.GetDiscountedUnitPrice(p, couponAmount);
+
+                    var discUnit = _priceCalc.GetDiscountedUnitPrice(p, coupon);
+
+
                     return new CartItemVM
                     {
                         CartItemId = ci.CartItemId,
@@ -74,6 +78,8 @@ namespace ECommerceSecureApp.Controllers
             };
             return View(vm);
         }
+
+
 
         // ========= Supports AJAX (stays on page) =========
         [HttpPost]
@@ -152,7 +158,7 @@ namespace ECommerceSecureApp.Controllers
             }
 
             var couponCode = GetCoupon();
-            var couponAmount = _couponSvc.ResolveCouponAmount(couponCode);
+            var coupon = _couponSvc.Resolve(couponCode); 
 
             var vm = new CheckoutVM
             {
@@ -162,7 +168,11 @@ namespace ECommerceSecureApp.Controllers
                 {
                     var p = ci.Product;
                     var orig = p.Price;
-                    var discUnit = _priceCalc.GetDiscountedUnitPrice(p, couponAmount);
+
+                    var discUnit = _priceCalc.GetDiscountedUnitPrice(p, coupon);
+                    // If you don't have the overload yet:
+                    // var discUnit = _priceCalc.GetDiscountedUnitPrice(p, coupon?.AmountOff ?? 0);
+
                     return new CartItemVM
                     {
                         CartItemId = ci.CartItemId,
@@ -177,6 +187,7 @@ namespace ECommerceSecureApp.Controllers
             return View(vm);
         }
 
+
         [HttpPost, Authorize, ValidateAntiForgeryToken]
         public async Task<IActionResult> PlaceOrder(CheckoutVM input)
         {
@@ -189,12 +200,14 @@ namespace ECommerceSecureApp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var couponAmount = _couponSvc.ResolveCouponAmount(GetCoupon());
+            var coupon = _couponSvc.Resolve(GetCoupon());
             var total = items.Sum(ci =>
             {
-                var unit = _priceCalc.GetDiscountedUnitPrice(ci.Product, couponAmount);
+                var unit = _priceCalc.GetDiscountedUnitPrice(ci.Product, coupon);
+
                 return unit * ci.Quantity;
             });
+
 
             int? paymentId = null;
             if (string.Equals(input.PaymentMethod, "PayPal", StringComparison.OrdinalIgnoreCase))
@@ -214,7 +227,7 @@ namespace ECommerceSecureApp.Controllers
             HttpContext.Session.Remove(CartSessionKey);
 
             TempData["Success"] = $"Order #{order.OrderId} placed successfully.";
-            return RedirectToAction("Index", "Products");
+            return RedirectToAction("Index", "Home");
         }
     }
 }
