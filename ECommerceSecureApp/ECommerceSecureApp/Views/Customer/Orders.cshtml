@@ -1,0 +1,83 @@
+@model List<ECommerceSecureApp.Models.ViewModels.OrderHistoryVM>
+@{
+    ViewData["Title"] = "Order History";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Order History</h2>
+        <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Orders Found</h4>
+            <p class="text-muted">You haven't placed any orders yet.</p>
+            <a href="@Url.Action("Index", "Products")" class="btn btn-primary">Start Shopping</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var order in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Order #@order.OrderId</h6>
+                            <span class="badge @(order.OrderStatus.ToLower() switch {
+                                "pending" => "bg-warning",
+                                "processing" => "bg-info", 
+                                "shipped" => "bg-primary",
+                                "delivered" => "bg-success",
+                                "cancelled" => "bg-danger",
+                                _ => "bg-secondary"
+                            })">@order.OrderStatus</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <small class="text-muted">Order Date:</small>
+                                <div>@order.CreatedDate.ToString("MMM dd, yyyy")</div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">Items:</small>
+                                <div>
+                                    @if (order.OrderItems.Any())
+                                    {
+                                        @foreach (var item in order.OrderItems.Take(2))
+                                        {
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-truncate" style="max-width: 150px;">@item.ProductName</span>
+                                                <span class="text-muted">x@(item.Quantity)</span>
+                                            </div>
+                                        }
+                                        @if (order.OrderItems.Count > 2)
+                                        {
+                                            <small class="text-muted">+@(order.OrderItems.Count - 2) more items</small>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Total:</small>
+                                <div class="h5 text-primary mb-0">@order.Total.ToString("C")</div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="@Url.Action("OrderDetails", "Customer", new { id = order.OrderId })" 
+                               class="btn btn-outline-primary btn-sm w-100">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
