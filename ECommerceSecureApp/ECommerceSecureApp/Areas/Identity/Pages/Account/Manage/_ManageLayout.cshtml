@@ -1,0 +1,72 @@
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card" style="position: sticky; top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0">Manage your account</h5>
+                    <small class="text-muted">Change your account settings</small>
+                </div>
+                <div class="card-body p-0">
+                    <partial name="_ManageNav" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Override all hover effects for Identity pages */
+    .card {
+        transition: none !important;
+        transform: none !important;
+    }
+    
+    .card:hover {
+        transform: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+    
+    .nav-link {
+        transition: none !important;
+    }
+    
+    .nav-link:hover {
+        transform: none !important;
+    }
+    
+    /* Override the product-card hover effect from site.css */
+    .product-card {
+        transition: none !important;
+    }
+    
+    .product-card:hover {
+        transform: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+    
+    /* Ensure all cards in this layout are static */
+    .container .card {
+        transition: none !important;
+        transform: none !important;
+    }
+    
+    .container .card:hover {
+        transform: none !important;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+</style>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}
