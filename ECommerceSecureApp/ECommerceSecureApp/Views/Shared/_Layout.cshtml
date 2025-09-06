@@ -20,8 +20,8 @@
                 </a>
 
                 <!-- Search bar -->
-                <form class="d-flex" method="get" asp-controller="Products" asp-action="Index">
-                    <input class="form-control me-2" type="search" name="query" placeholder="Search products" aria-label="Search">
+                <form class="d-flex" method="get" asp-controller="Home" asp-action="Index">
+                    <input class="form-control me-2" type="search" name="name" placeholder="Search products" aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
 
@@ -33,9 +33,9 @@
                                 Categories
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarCategoryDropdown">
-                                <li><a class="dropdown-item" asp-route-category="Electronics">Electronics</a></li>
-                                <li><a class="dropdown-item" asp-route-category="Clothing">Clothing</a></li>
-                                <li><a class="dropdown-item" asp-route-category="Grocery">Grocery</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-category="Electronics">Electronics</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-category="Clothing">Clothing</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-category="Grocery">Grocery</a></li>
                             </ul>
                         </li>
 
@@ -73,7 +73,7 @@
                     <h6 class="text-warning">Quick Links</h6>
                     <ul class="list-unstyled small">
                         <li><a asp-controller="Home" asp-action="Index" class="text-light">Home</a></li>
-                        <li><a asp-controller="Products" asp-action="Index" class="text-light">Products</a></li>
+                        <li><a asp-controller="Home" asp-action="Index" class="text-light">Products</a></li>
                         <li><a asp-controller="Review" asp-action="Index" class="text-light">Reviews</a></li>
                     </ul>
                 </div>

@@ -91,10 +91,22 @@ namespace ECommerceSecureApp.Controllers
                 var averageRating = await _reviewService.GetAverageRatingAsync(productId);
                 var reviewCount = await _reviewService.GetReviewCountAsync(productId);
 
+                // Check if current user has purchased this product (for UI display)
+                bool canReview = false;
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        canReview = await _reviewService.HasUserPurchasedProductAsync(userId, productId);
+                    }
+                }
+
                 // Pass data to the view using ViewBag
                 ViewBag.Product = product;
                 ViewBag.AverageRating = averageRating;
                 ViewBag.ReviewCount = reviewCount;
+                ViewBag.CanReview = canReview;
 
                 return View(reviews);
             }
@@ -120,18 +132,29 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user already reviewed this product
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (!string.IsNullOrEmpty(userId))
+                if (string.IsNullOrEmpty(userId))
                 {
-                    var existingReview = await _context.ProductReviews
-                        .FirstOrDefaultAsync(r => r.ProductId == productId && r.ExternalUserId == userId);
-                    
-                    if (existingReview != null)
-                    {
-                        TempData["InfoMessage"] = "You have already reviewed this product.";
-                        return RedirectToAction("ProductReviews", new { productId });
-                    }
+                    TempData["ErrorMessage"] = "User not authenticated.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Check if user has purchased this product
+                var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, productId);
+                if (!hasPurchased)
+                {
+                    TempData["ErrorMessage"] = "You can only review products you have purchased.";
+                    return RedirectToAction("ProductReviews", new { productId });
+                }
+
+                // Check if user already reviewed this product
+                var existingReview = await _context.ProductReviews
+                    .FirstOrDefaultAsync(r => r.ProductId == productId && r.ExternalUserId == userId);
+                
+                if (existingReview != null)
+                {
+                    TempData["InfoMessage"] = "You have already reviewed this product.";
+                    return RedirectToAction("ProductReviews", new { productId });
                 }
 
                 ViewBag.Product = product;
