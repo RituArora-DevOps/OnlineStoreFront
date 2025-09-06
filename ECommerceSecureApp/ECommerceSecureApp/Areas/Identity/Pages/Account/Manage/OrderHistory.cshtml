@@ -1,0 +1,94 @@
+@page
+@model OrderHistoryModel
+@{
+    ViewData["Title"] = "Order History";
+    ViewData["ActivePage"] = ManageNavPages.OrderHistory;
+    Layout = "_ManageLayout";
+}
+
+<h4>@ViewData["Title"]</h4>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.Orders.Any())
+{
+    <div class="row">
+        @foreach (var order in Model.Orders)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Order #@order.OrderId</h6>
+                        <span class="badge @(order.OrderStatus.ToLower() switch {
+                            "pending" => "bg-warning",
+                            "processing" => "bg-info", 
+                            "shipped" => "bg-primary",
+                            "delivered" => "bg-success",
+                            "cancelled" => "bg-danger",
+                            _ => "bg-secondary"
+                        })">@order.OrderStatus</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-muted">Order Date:</small>
+                            <div>@order.CreatedDate.ToString("MMM dd, yyyy")</div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">Items:</small>
+                            <div>
+                                @if (order.OrderItems.Any())
+                                {
+                                    @foreach (var item in order.OrderItems.Take(2))
+                                    {
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-truncate" style="max-width: 150px;">@item.ProductName</span>
+                                            <span class="text-muted">x@(item.Quantity)</span>
+                                        </div>
+                                    }
+                                    @if (order.OrderItems.Count > 2)
+                                    {
+                                        <small class="text-muted">+@(order.OrderItems.Count - 2) more items</small>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted">Total:</small>
+                            <div class="h5 text-primary mb-0">@order.Total.ToString("C")</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Customer" asp-action="OrderDetails" asp-route-id="@order.OrderId" 
+                           class="btn btn-outline-primary btn-sm w-100">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <h4>No Orders Found</h4>
+        <p>You haven't placed any orders yet. Start by browsing our products and making your first purchase!</p>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Browse Products</a>
+    </div>
+}
