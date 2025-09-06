@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using ECommerceSecureApp.Models;
 using ECommerceSecureApp.Repository;
 using ECommerceSecureApp.BehavioralDesignPattern.StrategyDesignPattern.Search;
@@ -32,6 +33,12 @@ namespace ECommerceSecureApp.Controllers
         // GET: Products
         public async Task<IActionResult> Index(int page = 1)
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             int pageSize = 10;
             var pagedProducts = await _productRepository.GetAllProductsAsync(page, pageSize);
             return View(pagedProducts);
@@ -71,9 +78,21 @@ namespace ECommerceSecureApp.Controllers
             var averageRating = await _reviewService.GetAverageRatingAsync(id.Value);
             var reviewCount = await _reviewService.GetReviewCountAsync(id.Value);
 
+            // Check if current user has purchased this product (for UI display)
+            bool canReview = false;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    canReview = await _reviewService.HasUserPurchasedProductAsync(userId, id.Value);
+                }
+            }
+
             ViewBag.Reviews = reviews;
             ViewBag.AverageRating = averageRating;
             ViewBag.ReviewCount = reviewCount;
+            ViewBag.CanReview = canReview;
 
             return View(product);
         }
@@ -81,6 +100,12 @@ namespace ECommerceSecureApp.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             PopulateCategoryList();
 
             return View();
@@ -93,6 +118,12 @@ namespace ECommerceSecureApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ProductId,Price,Category,Name,Description,CreatedDate,ModifiedDate")] Product product)
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (ModelState.IsValid)
             {
                 await _productRepository.InsertAsync(product);
@@ -107,6 +138,12 @@ namespace ECommerceSecureApp.Controllers
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -129,6 +166,12 @@ namespace ECommerceSecureApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ProductId,Price,Category,Name,Description,CreatedDate,ModifiedDate")] Product product)
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (id != product.ProductId)
             {
                 return NotFound();
@@ -163,6 +206,12 @@ namespace ECommerceSecureApp.Controllers
         // GET: Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -182,6 +231,12 @@ namespace ECommerceSecureApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            // Redirect non-admin users to the public product catalog
+            if (!User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             var product = await _productRepository.GetByIdAsync(id);
             if (product != null)
             {
