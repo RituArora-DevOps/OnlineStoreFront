@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 public class CustomerController : Controller
 {
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly IGenericRepository<Order> _orderRepository;
+    private readonly IOrderRepository _orderRepository;
     private readonly IGenericRepository<ProductReview> _reviewRepository;
 
     public CustomerController(
         UserManager<IdentityUser> userManager,
-        IGenericRepository<Order> orderRepository,
+        IOrderRepository orderRepository,
         IGenericRepository<ProductReview> reviewRepository)
     {
         _userManager = userManager;
@@ -24,16 +24,16 @@ public class CustomerController : Controller
     public async Task<IActionResult> Dashboard()
     {
         var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Index", "Home");
+        }
 
-        // Fetch all orders for this user
-        var orders = await _orderRepository.GetAllAsync();
-        var userOrders = orders
-            .Where(o => o.ExternalUserId == userId)
-            .OrderByDescending(o => o.CreatedDate)
-            .Take(5)
-            .ToList();
+        // Fetch recent orders for this user
+        var userOrders = await _orderRepository.GetOrdersForUserAsync(userId);
+        var recentOrders = userOrders.Take(5).ToList();
 
-        ViewBag.RecentOrders = userOrders;
+        ViewBag.RecentOrders = recentOrders;
 
         // Fetch all reviews by this user
         var reviews = await _reviewRepository.GetAllAsync();

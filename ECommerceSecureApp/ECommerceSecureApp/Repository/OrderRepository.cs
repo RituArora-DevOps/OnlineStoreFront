@@ -55,6 +55,7 @@ namespace ECommerceSecureApp.Repository
 
         public Task<List<Order>> GetOrdersForUserAsync(string externalUserId) =>
             _context.Orders.Include(o => o.OrderStatus)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
                 .Where(o => o.ExternalUserId == externalUserId)
                 .OrderByDescending(o => o.CreatedDate)
                 .ToListAsync();
