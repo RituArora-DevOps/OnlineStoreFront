@@ -57,7 +57,19 @@
                 @if (Model.Order.Payment != null)
                 {
                     <div class="mb-3">
-                        <strong>Payment Method:</strong> @Model.Order.Payment.GetType().Name.Replace("Payment", "")
+                        <strong>Payment Method:</strong> 
+                        @if (Model.Order.Payment.CreditCardPayment != null)
+                        {
+                            <span>Credit Card (****@Model.Order.Payment.CreditCardPayment.Last4)</span>
+                        }
+                        else if (Model.Order.Payment.PayPalPayment != null)
+                        {
+                            <span>PayPal (@Model.Order.Payment.PayPalPayment.PayPalEmail)</span>
+                        }
+                        else
+                        {
+                            <span>Unknown Payment Method</span>
+                        }
                     </div>
                 }
             </div>

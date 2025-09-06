@@ -50,12 +50,15 @@ namespace ECommerceSecureApp.Repository
             _context.Orders
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
                 .Include(o => o.OrderStatus)
-                .Include(o => o.Payment)
+                .Include(o => o.Payment).ThenInclude(p => p.CreditCardPayment)
+                .Include(o => o.Payment).ThenInclude(p => p.PayPalPayment)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId)!;
 
         public Task<List<Order>> GetOrdersForUserAsync(string externalUserId) =>
             _context.Orders.Include(o => o.OrderStatus)
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment).ThenInclude(p => p.CreditCardPayment)
+                .Include(o => o.Payment).ThenInclude(p => p.PayPalPayment)
                 .Where(o => o.ExternalUserId == externalUserId)
                 .OrderByDescending(o => o.CreatedDate)
                 .ToListAsync();
