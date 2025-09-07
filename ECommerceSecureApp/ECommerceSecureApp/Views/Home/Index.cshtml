@@ -8,6 +8,12 @@
     <h1>Welcome to ECommerceSecureApp</h1>
     <p class="lead">Shop electronics, clothing, and groceries — all in one place.</p>
     <a class="btn btn-warning btn-lg" asp-controller="Home" asp-action="Index">Start Shopping</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a class="btn btn-warning btn-lg ms-3" asp-controller="Admin" asp-action="Dashboard">
+            Admin Dashboard
+        </a>
+    }
 </div>
 
 <div class="row">
