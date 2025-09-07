@@ -2,7 +2,7 @@
     ViewData["Title"] = "My Account";
 }
 
-<div class="container mt-4">
+<div class="container mt-4 text-dark">
     <h2 class="mb-4">My Account</h2>
 
     <div class="row g-4">
@@ -12,7 +12,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Profile</h5>
                     <p><strong>Email:</strong> @User.Identity.Name</p>
-                    <a href="@Url.Action("Profile", "Customer")" class="btn btn-primary btn-sm mt-2">Edit Profile</a>
+                    @* <a href="@Url.Action("Profile", "Customer")" class="btn btn-primary btn-sm mt-2">Edit Profile</a> *@
                 </div>
             </div>
         </div>
