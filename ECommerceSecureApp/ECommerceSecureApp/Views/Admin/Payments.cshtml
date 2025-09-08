@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "Payments Management";
+    var payments = ViewBag.Payments as IEnumerable<dynamic>;
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-black">All Orders & Payments</h2>
+        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Simple White Box -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Orders and Payments</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (payments != null && payments.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer ID</th>
+                                <th>Amount</th>
+                                <th>Payment Method</th>
+                                <th>Order Date</th>
+                                <th>Payment Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in payments)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="@Url.Action("OrderDetails", "Customer", new { id = payment.OrderId })" 
+                                           class="text-decoration-none">
+                                            #@payment.OrderId
+                                        </a>
+                                    </td>
+                                    <td>@payment.CustomerId</td>
+                                    <td>@payment.Amount.ToString("C")</td>
+                                    <td>@payment.PaymentMethod</td>
+                                    <td>@payment.OrderDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@payment.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="confirmRefund(@payment.OrderId, @payment.Amount, '@payment.PaymentMethod')">
+                                            Cancel & Refund
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <h4 class="text-muted">No Orders Found</h4>
+                    <p class="text-muted">No order records are available at this time.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    h2, h5 {
+        color: #000000 !important;
+    }
+</style>
+
+<script>
+function confirmRefund(orderId, amount, paymentMethod) {
+    if (confirm(`Are you sure you want to cancel and refund this payment?\n\nOrder ID: #${orderId}\nAmount: $${amount.toFixed(2)}\nPayment Method: ${paymentMethod}\n\nThis action cannot be undone.`)) {
+        // Call the refund action
+        fetch('@Url.Action("RefundPayment", "Admin")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({
+                orderId: orderId,
+                amount: amount,
+                paymentMethod: paymentMethod
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payment refunded successfully!');
+                location.reload(); // Refresh the page to show updated data
+            } else {
+                alert('Error refunding payment: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing the refund.');
+        });
+    }
+}
+</script>

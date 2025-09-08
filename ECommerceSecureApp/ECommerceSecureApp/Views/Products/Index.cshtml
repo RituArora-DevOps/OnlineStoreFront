@@ -7,10 +7,13 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between text-black mb-3">
         <h2>Manage Products</h2>
-        @if (User.IsInRole("Admin"))
-        {
-            <a asp-action="Create" class="btn btn-warning">+ Create New</a>
-        }
+        <div>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary me-2">Back to Dashboard</a>
+                <a asp-action="Create" class="btn btn-warning">+ Create New</a>
+            }
+        </div>
     </div>
 
     <div class="card shadow-sm">
