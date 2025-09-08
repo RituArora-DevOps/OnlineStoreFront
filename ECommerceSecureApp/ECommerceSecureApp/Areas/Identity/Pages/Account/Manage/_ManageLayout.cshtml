@@ -25,9 +25,9 @@
             }
             
             <div class="card" style="position: sticky; top: 20px;">
-                <div class="card-header">
-                    <h5 class="mb-0">Manage your account</h5>
-                    <small class="text-muted">Change your account settings</small>
+                <div class="card-header" style="background-color: #f8f9fa !important;">
+                    <h5 class="mb-0" style="color: #000000 !important; font-weight: bold !important;">Manage your account</h5>
+                    <small style="color: #6c757d !important;">Change your account settings</small>
                 </div>
                 <div class="card-body p-0">
                     <partial name="_ManageNav" />
@@ -36,7 +36,7 @@
         </div>
         <div class="col-md-9">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body text-dark">
                     @RenderBody()
                 </div>
             </div>
@@ -83,6 +83,91 @@
     .container .card:hover {
         transform: none !important;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+    
+    /* Ensure all text in manage pages is dark and visible */
+    .card-body h1, .card-body h2, .card-body h3, .card-body h4, .card-body h5, .card-body h6 {
+        color: #000000 !important;
+    }
+    
+    .card-body p, .card-body li, .card-body span, .card-body div {
+        color: #000000 !important;
+    }
+    
+    .card-body .text-muted {
+        color: #6c757d !important;
+    }
+    
+    .card-body .text-dark {
+        color: #000000 !important;
+    }
+    
+    /* Ensure card header text is always dark and visible */
+    .card-header h5, .card-header h6, .card-header small {
+        color: #000000 !important;
+    }
+    
+    .card-header .text-dark {
+        color: #000000 !important;
+    }
+    
+    .card-header .text-muted {
+        color: #6c757d !important;
+    }
+    
+    /* Force all text in card headers to be dark */
+    .card-header * {
+        color: #000000 !important;
+    }
+    
+    .card-header small {
+        color: #6c757d !important;
+    }
+    
+    /* Specific targeting for the manage account header */
+    .card-header h5.mb-0 {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+    
+    .card-header small {
+        color: #6c757d !important;
+        font-weight: normal !important;
+    }
+    
+    /* Ensure navigation links are visible */
+    .nav-link {
+        color: #000000 !important;
+    }
+    
+    .nav-link:hover {
+        color: #000000 !important;
+        background-color: #f8f9fa !important;
+    }
+    
+    .nav-link.active {
+        color: #000000 !important;
+        background-color: #e9ecef !important;
+    }
+    
+    /* Additional overrides to ensure text visibility */
+    .container .card .card-header h5 {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+    
+    .container .card .card-header small {
+        color: #6c757d !important;
+    }
+    
+    /* Force override any inherited styles */
+    .card-header h5.mb-0.text-dark {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+    
+    .card-header small.text-dark {
+        color: #6c757d !important;
     }
 </style>
 
