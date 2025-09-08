@@ -285,10 +285,10 @@ namespace ECommerceSecureApp.Services
                 throw new ArgumentException("Product ID must be greater than 0", nameof(productId));
             }
 
-            // Check if user has any completed orders containing this product
+            // Check if user has any delivered orders containing this product
             var hasPurchased = await _context.Orders
                 .Where(o => o.ExternalUserId == userId)
-                .Where(o => o.OrderStatusId == 3) // Assuming 3 is "Completed" status
+                .Where(o => o.OrderStatusId == 3) // 3 is "Delivered" status
                 .AnyAsync(o => o.OrderItems.Any(oi => oi.ProductId == productId));
 
             _logger.LogInformation("User {UserId} purchase check for product {ProductId}: {HasPurchased}", 
@@ -310,6 +310,23 @@ namespace ECommerceSecureApp.Services
                 .Where(r => r.ProductId == productId)
                 .OrderByDescending(r => r.CreatedDate)
                 .ToListAsync();
+        }
+
+        // Checks if a user has already reviewed a specific product
+        public async Task<bool> HasUserReviewedProductAsync(string userId, int productId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID must be specified", nameof(userId));
+            }
+
+            if (productId <= 0)
+            {
+                throw new ArgumentException("Product ID must be greater than 0", nameof(productId));
+            }
+
+            return await _context.ProductReviews
+                .AnyAsync(r => r.ExternalUserId == userId && r.ProductId == productId);
         }
     }
 }

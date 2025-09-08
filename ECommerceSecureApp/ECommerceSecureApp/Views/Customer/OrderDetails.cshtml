@@ -86,6 +86,10 @@
                                         <th class="text-center">Quantity</th>
                                         <th class="text-end">Price</th>
                                         <th class="text-end">Subtotal</th>
+                                        @if (Model.OrderStatus == "Delivered")
+                                        {
+                                            <th class="text-center">Review</th>
+                                        }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -113,6 +117,28 @@
                                             <td class="text-center">@item.Quantity</td>
                                             <td class="text-end">@item.PriceAtOrder.ToString("C")</td>
                                             <td class="text-end fw-medium">@item.Subtotal.ToString("C")</td>
+                                            @if (Model.OrderStatus == "Delivered")
+                                            {
+                                                <td class="text-center">
+                                                    @{
+                                                        var reviewedProducts = ViewBag.ReviewedProducts as Dictionary<int, bool>;
+                                                        var hasReviewed = reviewedProducts?.ContainsKey(item.ProductId) == true && reviewedProducts[item.ProductId];
+                                                    }
+                                                    @if (hasReviewed)
+                                                    {
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check"></i> Reviewed
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="@Url.Action("Create", "Review", new { productId = item.ProductId })" 
+                                                           class="btn btn-outline-primary btn-sm">
+                                                            <i class="fas fa-star"></i> Review
+                                                        </a>
+                                                    }
+                                                </td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>

@@ -176,9 +176,15 @@ namespace ECommerceSecureApp.Controllers
         {
             try
             {
+                _logger.LogInformation("POST request received for review creation. ProductId: {ProductId}, Rating: {Rating}", 
+                    review.ProductId, review.Rating);
+                
                 // Check if the form data is valid
                 if (!ModelState.IsValid)
                 {
+                    _logger.LogWarning("Model state is invalid. Errors: {Errors}", 
+                        string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                    
                     var product = await _context.Products.FindAsync(review.ProductId);
                     ViewBag.Product = product;
                     return View(review);
@@ -214,8 +220,12 @@ namespace ECommerceSecureApp.Controllers
                 review.ExternalUserId = userId;
                 await _reviewService.CreateReviewAsync(review);
 
-                TempData["SuccessMessage"] = "Your review has been submitted successfully.";
-                return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                TempData["SuccessMessage"] = "Thank you for reviewing this product!";
+                
+                // Reload the product and return to the same page
+                var productForView = await _context.Products.FindAsync(review.ProductId);
+                ViewBag.Product = productForView;
+                return View(new ProductReview { ProductId = review.ProductId });
             }
             catch (Exception ex)
             {
