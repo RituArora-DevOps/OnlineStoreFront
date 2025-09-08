@@ -30,5 +30,5 @@ public partial class ProductReview
 
     [ForeignKey("ProductId")]
     [InverseProperty("ProductReviews")]
-    public virtual Product Product { get; set; } = null!;
+    public virtual Product? Product { get; set; }
 }

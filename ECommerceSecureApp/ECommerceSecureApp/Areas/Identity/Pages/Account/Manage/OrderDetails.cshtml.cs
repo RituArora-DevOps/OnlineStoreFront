@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ECommerceSecureApp.Models;
 using ECommerceSecureApp.Models.ViewModels;
 using ECommerceSecureApp.Repository;
+using ECommerceSecureApp.Services;
 using System.Security.Claims;
 
 namespace ECommerceSecureApp.Areas.Identity.Pages.Account.Manage
@@ -13,11 +14,13 @@ namespace ECommerceSecureApp.Areas.Identity.Pages.Account.Manage
     public class OrderDetailsModel : PageModel
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly ReviewService _reviewService;
         private readonly ILogger<OrderDetailsModel> _logger;
 
-        public OrderDetailsModel(IOrderRepository orderRepository, ILogger<OrderDetailsModel> logger)
+        public OrderDetailsModel(IOrderRepository orderRepository, ReviewService reviewService, ILogger<OrderDetailsModel> logger)
         {
             _orderRepository = orderRepository;
+            _reviewService = reviewService;
             _logger = logger;
         }
 
@@ -61,6 +64,17 @@ namespace ECommerceSecureApp.Areas.Identity.Pages.Account.Manage
                     }).ToList() ?? new List<OrderItemVM>(),
                     Payment = order.Payment
                 };
+
+                // Check if user has already reviewed each product (only for delivered orders)
+                if (order.OrderStatus?.Status == "Delivered" && Order.OrderItems.Any())
+                {
+                    var reviewedProducts = new Dictionary<int, bool>();
+                    foreach (var item in Order.OrderItems)
+                    {
+                        reviewedProducts[item.ProductId] = await _reviewService.HasUserReviewedProductAsync(userId, item.ProductId);
+                    }
+                    ViewData["ReviewedProducts"] = reviewedProducts;
+                }
 
                 return Page();
             }

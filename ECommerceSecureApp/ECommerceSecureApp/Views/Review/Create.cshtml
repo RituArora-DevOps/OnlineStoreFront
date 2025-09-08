@@ -13,6 +13,22 @@
                     <h4>Write a Review</h4>
                 </div>
                 <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
                     <!-- Product Info -->
                     <div class="mb-4">
                         <h5>@product?.Name</h5>
@@ -20,40 +36,62 @@
                         <p><strong>Price:</strong> $@product?.Price.ToString("F2")</p>
                     </div>
 
-                    <form asp-action="Create" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                        
-                        <input asp-for="ProductId" type="hidden" />
+                    @if (TempData["SuccessMessage"] == null)
+                    {
+                        <form asp-action="Create" method="post" onsubmit="console.log('Form onsubmit triggered!')">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                            
+                            <input asp-for="ProductId" type="hidden" />
 
-                        <div class="mb-3">
-                            <label asp-for="Rating" class="form-label">Rating *</label>
-                            <div class="rating-input">
-                                @for (int i = 1; i <= 5; i++)
-                                {
-                                    <input type="radio" asp-for="Rating" value="@i" id="rating@(i)" class="d-none" />
-                                    <label for="rating@(i)" class="rating-star" data-rating="@i">★</label>
-                                }
+                            <div class="mb-3">
+                                <label asp-for="Rating" class="form-label">Rating *</label>
+                                <div class="rating-input">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <input type="radio" asp-for="Rating" value="@i" id="rating@(i)" class="d-none" />
+                                        <label for="rating@(i)" class="rating-star" data-rating="@i">★</label>
+                                    }
+                                </div>
+                                <span asp-validation-for="Rating" class="text-danger"></span>
                             </div>
-                            <span asp-validation-for="Rating" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Comment" class="form-label">Your Review</label>
-                            <textarea asp-for="Comment" class="form-control" rows="5" 
-                                      placeholder="Share your experience with this product..."></textarea>
-                            <span asp-validation-for="Comment" class="text-danger"></span>
-                            <div class="form-text">Maximum 1000 characters</div>
-                        </div>
+                            <div class="mb-3">
+                                <label asp-for="Comment" class="form-label">Your Review</label>
+                                <textarea asp-for="Comment" class="form-control" rows="5" 
+                                          placeholder="Share your experience with this product..."></textarea>
+                                <span asp-validation-for="Comment" class="text-danger"></span>
+                                <div class="form-text">Maximum 1000 characters</div>
+                            </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="ProductReviews" asp-route-productId="@product?.ProductId" class="btn btn-secondary">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-star"></i> Submit Review
-                            </button>
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="ProductReviews" asp-route-productId="@product?.ProductId" class="btn btn-secondary">
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary" onclick="console.log('Submit button clicked!')">
+                                    <i class="fas fa-star"></i> Submit Review
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-check-circle fa-3x text-success"></i>
+                            </div>
+                            <h5 class="text-success">Review Submitted Successfully!</h5>
+                            <p class="text-muted">Thank you for taking the time to review this product.</p>
+                            <div class="mt-4">
+                                <a asp-action="ProductReviews" asp-route-productId="@product?.ProductId" class="btn btn-primary me-2">
+                                    View All Reviews
+                                </a>
+                                <a asp-action="Index" asp-controller="Products" class="btn btn-outline-secondary">
+                                    Continue Shopping
+                                </a>
+                            </div>
                         </div>
-                    </form>
+                    }
                 </div>
             </div>
         </div>
@@ -66,17 +104,24 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ratingStars = document.querySelectorAll('.rating-star');
-            const ratingInput = document.querySelector('input[name="Rating"]:checked');
+            const ratingInputs = document.querySelectorAll('input[name="Rating"]');
             
             // Set initial rating if any
-            if (ratingInput) {
-                highlightStars(parseInt(ratingInput.value));
+            let checkedInput = document.querySelector('input[name="Rating"]:checked');
+            if (checkedInput) {
+                highlightStars(parseInt(checkedInput.value));
             }
             
             ratingStars.forEach(star => {
                 star.addEventListener('click', function() {
                     const rating = parseInt(this.dataset.rating);
-                    document.querySelector(`input[name="Rating"][value="${rating}"]`).checked = true;
+                    // Uncheck all radio buttons first
+                    ratingInputs.forEach(input => input.checked = false);
+                    // Check the selected one
+                    const targetInput = document.querySelector(`input[name="Rating"][value="${rating}"]`);
+                    if (targetInput) {
+                        targetInput.checked = true;
+                    }
                     highlightStars(rating);
                 });
                 
@@ -104,6 +149,26 @@
                     }
                 });
             }
+            
+            // Add form submission debugging
+            document.querySelector('form').addEventListener('submit', function(e) {
+                console.log('Form is being submitted...');
+                
+                // Check if rating is selected
+                const checkedRating = document.querySelector('input[name="Rating"]:checked');
+                if (!checkedRating) {
+                    e.preventDefault();
+                    alert('Please select a rating before submitting.');
+                    return false;
+                }
+                
+                const formData = new FormData(this);
+                console.log('Form data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+            });
+            
         });
     </script>
 }
