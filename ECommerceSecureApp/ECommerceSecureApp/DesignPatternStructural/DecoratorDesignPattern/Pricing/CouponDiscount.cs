@@ -13,7 +13,7 @@ namespace ECommerceSecureApp.DesignPatternStructural.DecoratorDesignPattern.Pric
         {
             var basePrice = base.GetPrice();
             var discountedPrice = basePrice - _couponAmount;
-            return discountedPrice < 0 ? 0 : discountedPrice; // Ensure price doesn't go negative
+            return discountedPrice < 0 ? 0 : discountedPrice; // Prevent negative pricing
         }
     }
 }

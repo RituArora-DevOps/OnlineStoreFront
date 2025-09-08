@@ -91,7 +91,7 @@ namespace ECommerceSecureApp.Controllers
                 var averageRating = await _reviewService.GetAverageRatingAsync(productId);
                 var reviewCount = await _reviewService.GetReviewCountAsync(productId);
 
-                // Check if current user has purchased this product (for UI display)
+                // Verify current user has purchased this product for UI display
                 bool canReview = false;
                 if (User.Identity?.IsAuthenticated == true)
                 {
@@ -139,7 +139,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user has purchased this product
+                // Verify user has purchased this product
                 var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, productId);
                 if (!hasPurchased)
                 {
@@ -147,7 +147,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId });
                 }
 
-                // Check if user already reviewed this product
+                // Verify user has not already reviewed this product
                 var existingReview = await _context.ProductReviews
                     .FirstOrDefaultAsync(r => r.ProductId == productId && r.ExternalUserId == userId);
                 
@@ -168,7 +168,7 @@ namespace ECommerceSecureApp.Controllers
             }
         }
 
-        // Handles the creation of a new review
+        // Process creation of a new review
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -179,7 +179,7 @@ namespace ECommerceSecureApp.Controllers
                 _logger.LogInformation("POST request received for review creation. ProductId: {ProductId}, Rating: {Rating}", 
                     review.ProductId, review.Rating);
                 
-                // Check if the form data is valid
+                // Validate form data
                 if (!ModelState.IsValid)
                 {
                     _logger.LogWarning("Model state is invalid. Errors: {Errors}", 
@@ -198,7 +198,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user has purchased this product
+                // Verify user has purchased this product
                 var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
                 if (!hasPurchased)
                 {
@@ -206,7 +206,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
                 }
 
-                // Check if this user already reviewed this product
+                // Verify user has not already reviewed this product
                 var existingReview = await _context.ProductReviews
                     .FirstOrDefaultAsync(r => r.ProductId == review.ProductId && r.ExternalUserId == userId);
                 
@@ -252,7 +252,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user owns this review or is admin
+                // Verify user owns this review or is admin
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var isAdmin = User.IsInRole("Admin");
                 
@@ -262,7 +262,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
                 }
 
-                // Check if user has purchased this product (unless admin)
+                // Verify user has purchased this product (unless admin)
                 if (!isAdmin && !string.IsNullOrEmpty(userId))
                 {
                     var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
@@ -283,7 +283,7 @@ namespace ECommerceSecureApp.Controllers
             }
         }
 
-        // Handles the update of an existing review
+        // Process update of an existing review
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -302,7 +302,7 @@ namespace ECommerceSecureApp.Controllers
                     return View(review);
                 }
 
-                // Check if user owns this review or is admin
+                // Verify user owns this review or is admin
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var isAdmin = User.IsInRole("Admin");
                 
@@ -319,7 +319,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
                 }
 
-                // Check if user has purchased this product (unless admin)
+                // Verify user has purchased this product (unless admin)
                 if (!isAdmin && !string.IsNullOrEmpty(userId))
                 {
                     var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
@@ -365,7 +365,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user owns this review or is admin
+                // Verify user owns this review or is admin
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var isAdmin = User.IsInRole("Admin");
                 
@@ -375,7 +375,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("ProductReviews", new { productId = review.ProductId });
                 }
 
-                // Check if user has purchased this product (unless admin)
+                // Verify user has purchased this product (unless admin)
                 if (!isAdmin && !string.IsNullOrEmpty(userId))
                 {
                     var hasPurchased = await _reviewService.HasUserPurchasedProductAsync(userId, review.ProductId);
@@ -396,7 +396,7 @@ namespace ECommerceSecureApp.Controllers
             }
         }
 
-        // Handles the deletion of a review
+        // Process deletion of a review
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -411,7 +411,7 @@ namespace ECommerceSecureApp.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                // Check if user owns this review or is admin
+                // Verify user owns this review or is admin
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var isAdmin = User.IsInRole("Admin");
                 

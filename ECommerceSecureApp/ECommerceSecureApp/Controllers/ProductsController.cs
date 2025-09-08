@@ -78,7 +78,7 @@ namespace ECommerceSecureApp.Controllers
             var averageRating = await _reviewService.GetAverageRatingAsync(id.Value);
             var reviewCount = await _reviewService.GetReviewCountAsync(id.Value);
 
-            // Check if current user has purchased this product (for UI display)
+            // Verify current user has purchased this product for UI display
             bool canReview = false;
             if (User.Identity?.IsAuthenticated == true)
             {
