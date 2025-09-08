@@ -333,7 +333,16 @@ namespace ECommerceSecureApp.Controllers
                 await _reviewService.UpdateReviewAsync(review);
 
                 TempData["SuccessMessage"] = "Your review has been updated successfully.";
-                return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                
+                // If admin, redirect to Manage Reviews page, otherwise to product reviews
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return RedirectToAction("ProductReviews", new { productId = review.ProductId });
+                }
             }
             catch (Exception ex)
             {
@@ -416,7 +425,16 @@ namespace ECommerceSecureApp.Controllers
                 await _reviewService.DeleteReviewAsync(id);
 
                 TempData["SuccessMessage"] = "Your review has been deleted successfully.";
-                return RedirectToAction("ProductReviews", new { productId });
+                
+                // If admin, redirect to Manage Reviews page, otherwise to product reviews
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return RedirectToAction("ProductReviews", new { productId });
+                }
             }
             catch (Exception ex)
             {

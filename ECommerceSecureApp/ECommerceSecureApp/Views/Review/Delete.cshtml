@@ -59,9 +59,18 @@
                         <input asp-for="ProductId" type="hidden" />
                         
                         <div class="d-flex justify-content-between">
-                            <a asp-action="ProductReviews" asp-route-productId="@Model.ProductId" class="btn btn-secondary">
-                                Cancel
-                            </a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    Cancel
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="ProductReviews" asp-route-productId="@Model.ProductId" class="btn btn-secondary">
+                                    Cancel
+                                </a>
+                            }
                             <button type="submit" class="btn btn-danger">
                                 <i class="fas fa-trash"></i> Delete Review
                             </button>

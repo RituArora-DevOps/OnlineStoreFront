@@ -5,6 +5,25 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-3">
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="card mb-3" style="position: sticky; top: 20px;">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0 text-dark">Admin Panel</h5>
+                        <small class="text-dark">Administrative functions</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="nav nav-pills flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark fw-bold" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+            
             <div class="card" style="position: sticky; top: 20px;">
                 <div class="card-header">
                     <h5 class="mb-0">Manage your account</h5>
