@@ -1,4 +1,5 @@
 ﻿using ECommerceSecureApp.Models;
+using ECommerceSecureApp.Models.ViewModels;
 using ECommerceSecureApp.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,12 +41,54 @@ namespace ECommerceSecureApp.Controllers
             var reviews = await _reviewRepo.GetAllAsync();
             ViewBag.TotalReviews = reviews.Count();
 
-            var recentOrders = (await _orderRepo.GetAllAsync())
-                                .OrderByDescending(o => o.CreatedDate)
-                                .Take(5)
-                                .ToList();
+            // Get recent active orders (last 15)
+            var recentActiveOrders = await _context.Orders
+                .Include(o => o.OrderStatus)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment).ThenInclude(p => p!.CreditCardPayment)
+                .Include(o => o.Payment).ThenInclude(p => p!.PayPalPayment)
+                .Where(o => o.OrderStatusId != 4) // Exclude cancelled orders
+                .OrderByDescending(o => o.CreatedDate)
+                .Take(15)
+                .Select(o => new
+                {
+                    OrderId = o.OrderId,
+                    CustomerId = o.ExternalUserId ?? "Unknown",
+                    OrderDate = o.CreatedDate,
+                    Status = o.OrderStatus != null ? o.OrderStatus.Status : "Unknown",
+                    TotalAmount = o.OrderItems != null ? o.OrderItems.Sum(oi => oi.Quantity * oi.PriceAtOrder) : 0,
+                    PaymentMethod = o.Payment != null ? 
+                        (o.Payment!.CreditCardPayment != null ? "Credit Card" : 
+                         o.Payment!.PayPalPayment != null ? "PayPal" : "Unknown") : "No Payment",
+                    ItemCount = o.OrderItems != null ? o.OrderItems.Count : 0
+                })
+                .ToListAsync();
 
-            ViewBag.RecentOrders = recentOrders;
+            // Get recent cancelled orders (last 15)
+            var recentCancelledOrders = await _context.Orders
+                .Include(o => o.OrderStatus)
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment).ThenInclude(p => p!.CreditCardPayment)
+                .Include(o => o.Payment).ThenInclude(p => p!.PayPalPayment)
+                .Where(o => o.OrderStatusId == 4) // Only cancelled orders
+                .OrderByDescending(o => o.CreatedDate)
+                .Take(15)
+                .Select(o => new
+                {
+                    OrderId = o.OrderId,
+                    CustomerId = o.ExternalUserId ?? "Unknown",
+                    OrderDate = o.CreatedDate,
+                    Status = o.OrderStatus != null ? o.OrderStatus.Status : "Unknown",
+                    TotalAmount = o.OrderItems != null ? o.OrderItems.Sum(oi => oi.Quantity * oi.PriceAtOrder) : 0,
+                    PaymentMethod = o.Payment != null ? 
+                        (o.Payment!.CreditCardPayment != null ? "Credit Card" : 
+                         o.Payment!.PayPalPayment != null ? "PayPal" : "Unknown") : "No Payment",
+                    ItemCount = o.OrderItems != null ? o.OrderItems.Count : 0
+                })
+                .ToListAsync();
+
+            ViewBag.RecentActiveOrders = recentActiveOrders;
+            ViewBag.RecentCancelledOrders = recentCancelledOrders;
 
             return View();
         }
@@ -61,18 +104,18 @@ namespace ECommerceSecureApp.Controllers
             // Get active orders with payment data (exclude cancelled orders)
             var activeOrders = await _context.Orders
                 .Include(o => o.Payment)
-                    .ThenInclude(p => p.CreditCardPayment)
+                    .ThenInclude(p => p!.CreditCardPayment)
                 .Include(o => o.Payment)
-                    .ThenInclude(p => p.PayPalPayment)
+                    .ThenInclude(p => p!.PayPalPayment)
                 .Where(o => o.PaymentId.HasValue && o.Payment != null && o.OrderStatusId != 4)
                 .Select(o => new
                 {
                     OrderId = o.OrderId,
                     PaymentId = o.PaymentId,
-                    Amount = o.Payment.Amount,
-                    CreatedDate = o.Payment.CreatedDate,
-                    PaymentMethod = o.Payment.CreditCardPayment != null ? "Credit Card" : 
-                                   o.Payment.PayPalPayment != null ? "PayPal" : "Unknown",
+                    Amount = o.Payment!.Amount,
+                    CreatedDate = o.Payment!.CreatedDate,
+                    PaymentMethod = o.Payment!.CreditCardPayment != null ? "Credit Card" : 
+                                   o.Payment!.PayPalPayment != null ? "PayPal" : "Unknown",
                     CustomerId = o.ExternalUserId,
                     OrderDate = o.CreatedDate,
                     Status = "Active"
@@ -83,18 +126,18 @@ namespace ECommerceSecureApp.Controllers
             // Get cancelled/refunded orders
             var cancelledOrders = await _context.Orders
                 .Include(o => o.Payment)
-                    .ThenInclude(p => p.CreditCardPayment)
+                    .ThenInclude(p => p!.CreditCardPayment)
                 .Include(o => o.Payment)
-                    .ThenInclude(p => p.PayPalPayment)
+                    .ThenInclude(p => p!.PayPalPayment)
                 .Where(o => o.PaymentId.HasValue && o.Payment != null && o.OrderStatusId == 4)
                 .Select(o => new
                 {
                     OrderId = o.OrderId,
                     PaymentId = o.PaymentId,
-                    Amount = o.Payment.Amount,
-                    CreatedDate = o.Payment.CreatedDate,
-                    PaymentMethod = o.Payment.CreditCardPayment != null ? "Credit Card" : 
-                                   o.Payment.PayPalPayment != null ? "PayPal" : "Unknown",
+                    Amount = o.Payment!.Amount,
+                    CreatedDate = o.Payment!.CreatedDate,
+                    PaymentMethod = o.Payment!.CreditCardPayment != null ? "Credit Card" : 
+                                   o.Payment!.PayPalPayment != null ? "PayPal" : "Unknown",
                     CustomerId = o.ExternalUserId,
                     OrderDate = o.CreatedDate,
                     Status = "Refunded"
@@ -151,6 +194,55 @@ namespace ECommerceSecureApp.Controllers
             {
                 Console.WriteLine($"Error in RefundPayment: {ex.Message}");
                 return Json(new { success = false, message = "An error occurred while processing the refund: " + ex.Message });
+            }
+        }
+
+        // Admin can view any customer's order details
+        public async Task<IActionResult> OrderDetails(long id)
+        {
+            try
+            {
+                // Get the order with all related data
+                var order = await _context.Orders
+                    .Include(o => o.OrderStatus)
+                    .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                    .Include(o => o.Payment).ThenInclude(p => p!.CreditCardPayment)
+                    .Include(o => o.Payment).ThenInclude(p => p!.PayPalPayment)
+                    .FirstOrDefaultAsync(o => o.OrderId == id);
+
+                if (order == null)
+                {
+                    TempData["ErrorMessage"] = "Order not found.";
+                    return RedirectToAction("Dashboard");
+                }
+
+                // Convert to ViewModel for consistency with customer view
+                var orderHistoryVM = new OrderHistoryVM
+                {
+                    OrderId = order.OrderId,
+                    ExternalUserId = order.ExternalUserId ?? "Unknown",
+                    CreatedDate = order.CreatedDate,
+                    ModifiedDate = order.ModifiedDate,
+                    OrderStatus = order.OrderStatus?.Status ?? "Unknown",
+                    Total = order.OrderItems?.Sum(oi => oi.Quantity * oi.PriceAtOrder) ?? 0,
+                    OrderItems = order.OrderItems?.Select(oi => new OrderItemVM
+                    {
+                        OrderItemId = oi.OrderItemId,
+                        ProductId = oi.ProductId,
+                        ProductName = oi.Product?.Name ?? "Unknown Product",
+                        Quantity = oi.Quantity,
+                        PriceAtOrder = oi.PriceAtOrder,
+                        HasImage = oi.Product?.Pictures?.Any() ?? false
+                    }).ToList() ?? new List<OrderItemVM>(),
+                    Payment = order.Payment
+                };
+
+                return View(orderHistoryVM);
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "An error occurred while retrieving the order details.";
+                return RedirectToAction("Dashboard");
             }
         }
 
