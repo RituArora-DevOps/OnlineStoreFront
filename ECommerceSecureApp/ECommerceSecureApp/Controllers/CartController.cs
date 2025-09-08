@@ -106,6 +106,53 @@ namespace ECommerceSecureApp.Controllers
         public async Task<IActionResult> UpdateQuantity(int cartItemId, int quantity)
         {
             await _cartRepo.UpdateQuantityAsync(cartItemId, quantity);
+
+            // If it's an AJAX request, return recalculated totals as JSON
+            if (Request.Headers.TryGetValue("X-Requested-With", out var xrw) &&
+                string.Equals(xrw, "XMLHttpRequest", StringComparison.OrdinalIgnoreCase))
+            {
+                // Rebuild current cart view-model (discount-aware)
+                var externalUserId = GetExternalUserId();
+                var cart = await _cartRepo.GetOrCreateCartAsync(externalUserId, GetSessionCartId());
+                var coupon = _couponSvc.Resolve(GetCoupon());
+                var items = await _cartRepo.GetItemsAsync(cart.CartId);
+
+                var rows = items.Select(ci =>
+                {
+                    var p = ci.Product;
+                    var orig = p.Price;
+                    var discUnit = _priceCalc.GetDiscountedUnitPrice(p, coupon);
+                    return new
+                    {
+                        ci.CartItemId,
+                        ci.Quantity,
+                        OriginalUnitPrice = orig,
+                        DiscountedUnitPrice = discUnit,
+                        DiscountedLineTotal = discUnit * ci.Quantity,
+                        LineDiscount = (orig - discUnit) * ci.Quantity
+                    };
+                }).ToList();
+
+                var subtotalOriginal = rows.Sum(r => r.OriginalUnitPrice * r.Quantity);
+                var discountTotal = rows.Sum(r => r.LineDiscount);
+                var total = subtotalOriginal - discountTotal;
+
+                // Find the row we changed (may be missing if quantity went to 0)
+                var row = rows.FirstOrDefault(r => r.CartItemId == cartItemId);
+
+                return Json(new
+                {
+                    success = true,
+                    // For footer:
+                    subtotalOriginal,
+                    discountTotal,
+                    total,
+                    // For the edited row (can be null if removed):
+                    row
+                });
+            }
+
+            // Fallback for non-AJAX
             return RedirectToAction(nameof(Index));
         }
 

@@ -30,6 +30,7 @@
     {
         <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
             <form asp-action="ApplyCoupon" method="post" class="d-flex gap-2">
+                @Html.AntiForgeryToken()
                 <input type="text"
                        name="couponCode"
                        value="@Model.AppliedCoupon"
@@ -41,11 +42,13 @@
             @if (!string.IsNullOrWhiteSpace(Model.AppliedCoupon))
             {
                 <form asp-action="ClearCoupon" method="post">
+                    @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-outline-secondary">Clear Coupon</button>
                 </form>
             }
 
             <form asp-action="Clear" method="post" class="ms-auto">
+                @Html.AntiForgeryToken()
                 <input type="hidden" name="cartId" value="@Model.CartId" />
                 <button type="submit" class="btn btn-outline-danger">Clear Cart</button>
             </form>
@@ -67,27 +70,29 @@
                 <tbody>
                     @foreach (var item in Model.Items)
                     {
-                        <tr>
+                        <tr id="row-@item.CartItemId" data-cartitem-id="@item.CartItemId">
                             <td>@item.Name</td>
-                            <td class="text-end">@item.OriginalUnitPrice.ToString("C")</td>
-                            <td class="text-end">@item.DiscountedUnitPrice.ToString("C")</td>
+                            <td class="text-end" data-role="orig-unit">@item.OriginalUnitPrice.ToString("C")</td>
+                            <td class="text-end" data-role="disc-unit">@item.DiscountedUnitPrice.ToString("C")</td>
                             <td class="text-center">
-                                <form asp-action="UpdateQuantity" method="post" class="d-inline">
+                                <!-- No Update button; quantity change posts via JS -->
+                                <form asp-action="UpdateQuantity" method="post" class="js-qty-form d-inline">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="cartItemId" value="@item.CartItemId" />
                                     <div class="input-group input-group-sm" style="max-width: 160px;">
                                         <input type="number"
-                                               class="form-control"
+                                               class="form-control js-qty"
                                                name="quantity"
                                                value="@item.Quantity"
                                                min="0" />
-                                        <button type="submit" class="btn btn-primary">Update</button>
                                     </div>
                                 </form>
                             </td>
-                            <td class="text-end">@item.DiscountedLineTotal.ToString("C")</td>
-                            <td class="text-end text-success">-@item.LineDiscount.ToString("C")</td>
+                            <td class="text-end" data-role="line-total">@item.DiscountedLineTotal.ToString("C")</td>
+                            <td class="text-end text-success" data-role="line-saved">-@item.LineDiscount.ToString("C")</td>
                             <td class="text-end">
                                 <form asp-action="Remove" method="post">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="cartItemId" value="@item.CartItemId" />
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
                                 </form>
@@ -98,19 +103,19 @@
                 <tfoot>
                     <tr>
                         <th colspan="4" class="text-end">Subtotal (Original)</th>
-                        <th class="text-end">@Model.SubtotalOriginal.ToString("C")</th>
+                        <th class="text-end" id="subtotalOriginal">@Model.SubtotalOriginal.ToString("C")</th>
                         <th></th>
                         <th></th>
                     </tr>
                     <tr>
                         <th colspan="4" class="text-end">Discounts</th>
-                        <th class="text-end text-success">-@Model.DiscountTotal.ToString("C")</th>
+                        <th class="text-end text-success" id="discountTotal">-@Model.DiscountTotal.ToString("C")</th>
                         <th></th>
                         <th></th>
                     </tr>
                     <tr>
                         <th colspan="4" class="text-end">Total</th>
-                        <th class="text-end">@Model.Total.ToString("C")</th>
+                        <th class="text-end" id="grandTotal">@Model.Total.ToString("C")</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -126,3 +131,80 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        // Debounced, AJAX quantity update for cart rows
+        (function(){
+          // Use CAD (you can change to your currency code)
+          const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'CAD' });
+
+          function findToken(form){
+            const el = form.querySelector('input[name="__RequestVerificationToken"]');
+            return el ? el.value : null;
+          }
+
+          let timer = null;
+          document.addEventListener('input', function(e){
+            const input = e.target.closest('.js-qty');
+            if(!input) return;
+            const form = input.closest('.js-qty-form');
+            if(!form) return;
+
+            // debounce rapid typing
+            clearTimeout(timer);
+            timer = setTimeout(async () => {
+              const fd = new FormData(form);
+              const token = findToken(form);
+
+              try{
+                const res = await fetch(form.action, {
+                  method: 'POST',
+                  headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(token ? { 'RequestVerificationToken': token } : {})
+                  },
+                  body: fd,
+                  credentials: 'same-origin'
+                });
+                if(!res.ok) throw new Error('Request failed');
+                const data = await res.json();
+                if(!data || data.success !== true) return;
+
+                // Patch footer totals
+                const money = v => fmt.format(v);
+                const so = document.getElementById('subtotalOriginal');
+                const dt = document.getElementById('discountTotal');
+                const gt = document.getElementById('grandTotal');
+                if(so) so.textContent = money(data.subtotalOriginal);
+                if(dt) dt.textContent = '-' + money(data.discountTotal);
+                if(gt) gt.textContent = money(data.total);
+
+                // Update or remove the edited row
+                const rowId = fd.get('cartItemId');
+                const row = document.getElementById('row-' + rowId);
+
+                // If server removed the row (qty -> 0), delete from DOM
+                if (!data.row) {
+                  if (row) row.remove();
+                  return;
+                }
+
+                if (row) {
+                  const discUnit = row.querySelector('[data-role="disc-unit"]');
+                  const lineTotal = row.querySelector('[data-role="line-total"]');
+                  const lineSaved = row.querySelector('[data-role="line-saved"]');
+
+                  // Server returns numbers; format on client
+                  if (discUnit) discUnit.textContent = money(data.row.discountedUnitPrice);
+                  if (lineTotal) lineTotal.textContent = money(data.row.discountedLineTotal);
+                  if (lineSaved) lineSaved.textContent = '-' + money(data.row.lineDiscount);
+                }
+              } catch(err){
+                console.error(err);
+              }
+            }, 300);
+          });
+        })();
+    </script>
+}
