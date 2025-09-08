@@ -122,7 +122,7 @@ public class CustomerController : Controller
             Payment = order.Payment
         };
 
-        // Check if user has already reviewed each product (only for delivered orders)
+        // Verify user has already reviewed each product (only for delivered orders)
         if (order.OrderStatus?.Status == "Delivered" && orderHistoryVM.OrderItems.Any())
         {
             var reviewedProducts = new Dictionary<int, bool>();

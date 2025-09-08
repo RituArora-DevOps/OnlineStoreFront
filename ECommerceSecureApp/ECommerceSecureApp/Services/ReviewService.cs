@@ -68,31 +68,31 @@ namespace ECommerceSecureApp.Services
         // Creates a new review in the database
         public async Task<ProductReview> CreateReviewAsync(ProductReview review)
         {
-            // Check if review object is null
+            // Validate review object is not null
             if (review == null)
             {
                 throw new ArgumentNullException(nameof(review));
             }
 
-            // Make sure product ID is valid
+            // Validate product ID is specified
             if (review.ProductId <= 0)
             {
                 throw new ArgumentException("Product ID must be specified", nameof(review));
             }
 
-            // Make sure user ID is provided
+            // Validate user ID is provided
             if (string.IsNullOrEmpty(review.ExternalUserId))
             {
                 throw new ArgumentException("User ID must be specified", nameof(review));
             }
 
-            // Make sure rating is between 1 and 5 stars
+            // Validate rating is within valid range
             if (review.Rating < 1 || review.Rating > 5)
             {
                 throw new ArgumentException("Rating must be between 1 and 5", nameof(review));
             }
 
-            // Check if the product actually exists in the database
+            // Verify product exists in database
             var product = await _context.Products.FindAsync(review.ProductId);
             if (product == null)
             {
@@ -134,7 +134,7 @@ namespace ECommerceSecureApp.Services
                 throw new ArgumentException("Rating must be between 1 and 5", nameof(rating));
             }
 
-            // Verify product exists
+            // Confirm product exists
             var product = await _context.Products.FindAsync(productId);
             if (product == null)
             {
@@ -285,7 +285,7 @@ namespace ECommerceSecureApp.Services
                 throw new ArgumentException("Product ID must be greater than 0", nameof(productId));
             }
 
-            // Check if user has any delivered orders containing this product
+            // Verify user has delivered orders containing this product
             var hasPurchased = await _context.Orders
                 .Where(o => o.ExternalUserId == userId)
                 .Where(o => o.OrderStatusId == 3) // 3 is "Delivered" status
