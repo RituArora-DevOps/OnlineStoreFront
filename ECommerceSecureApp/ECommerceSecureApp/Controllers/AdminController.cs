@@ -58,13 +58,13 @@ namespace ECommerceSecureApp.Controllers
 
         public async Task<IActionResult> Payments()
         {
-            // Get all orders with payment data included using DbContext directly
-            var ordersWithPayments = await _context.Orders
+            // Get active orders with payment data (exclude cancelled orders)
+            var activeOrders = await _context.Orders
                 .Include(o => o.Payment)
                     .ThenInclude(p => p.CreditCardPayment)
                 .Include(o => o.Payment)
                     .ThenInclude(p => p.PayPalPayment)
-                .Where(o => o.PaymentId.HasValue && o.Payment != null)
+                .Where(o => o.PaymentId.HasValue && o.Payment != null && o.OrderStatusId != 4)
                 .Select(o => new
                 {
                     OrderId = o.OrderId,
@@ -74,12 +74,36 @@ namespace ECommerceSecureApp.Controllers
                     PaymentMethod = o.Payment.CreditCardPayment != null ? "Credit Card" : 
                                    o.Payment.PayPalPayment != null ? "PayPal" : "Unknown",
                     CustomerId = o.ExternalUserId,
-                    OrderDate = o.CreatedDate
+                    OrderDate = o.CreatedDate,
+                    Status = "Active"
                 })
                 .OrderByDescending(p => p.CreatedDate)
                 .ToListAsync();
 
-            ViewBag.Payments = ordersWithPayments;
+            // Get cancelled/refunded orders
+            var cancelledOrders = await _context.Orders
+                .Include(o => o.Payment)
+                    .ThenInclude(p => p.CreditCardPayment)
+                .Include(o => o.Payment)
+                    .ThenInclude(p => p.PayPalPayment)
+                .Where(o => o.PaymentId.HasValue && o.Payment != null && o.OrderStatusId == 4)
+                .Select(o => new
+                {
+                    OrderId = o.OrderId,
+                    PaymentId = o.PaymentId,
+                    Amount = o.Payment.Amount,
+                    CreatedDate = o.Payment.CreatedDate,
+                    PaymentMethod = o.Payment.CreditCardPayment != null ? "Credit Card" : 
+                                   o.Payment.PayPalPayment != null ? "PayPal" : "Unknown",
+                    CustomerId = o.ExternalUserId,
+                    OrderDate = o.CreatedDate,
+                    Status = "Refunded"
+                })
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
+
+            ViewBag.Payments = activeOrders;
+            ViewBag.CancelledPayments = cancelledOrders;
 
             return View();
         }
@@ -89,15 +113,26 @@ namespace ECommerceSecureApp.Controllers
         {
             try
             {
+                Console.WriteLine($"RefundPayment called: OrderId={request.OrderId}, Amount={request.Amount}, Method={request.PaymentMethod}");
+                
                 // Find the order and payment
                 var order = await _context.Orders
                     .Include(o => o.Payment)
                     .FirstOrDefaultAsync(o => o.OrderId == request.OrderId);
 
-                if (order == null || order.Payment == null)
+                if (order == null)
                 {
-                    return Json(new { success = false, message = "Order or payment not found." });
+                    Console.WriteLine($"Order {request.OrderId} not found");
+                    return Json(new { success = false, message = "Order not found." });
                 }
+
+                if (order.Payment == null)
+                {
+                    Console.WriteLine($"Payment not found for order {request.OrderId}");
+                    return Json(new { success = false, message = "Payment not found for this order." });
+                }
+
+                Console.WriteLine($"Found order {order.OrderId} with payment {order.PaymentId}");
 
                 // Update order status to "Cancelled" (assuming status ID 4 is cancelled)
                 order.OrderStatusId = 4; // Cancelled status
@@ -109,10 +144,12 @@ namespace ECommerceSecureApp.Controllers
 
                 await _context.SaveChangesAsync();
 
+                Console.WriteLine($"Successfully refunded order {request.OrderId}");
                 return Json(new { success = true, message = "Payment refunded and order cancelled successfully." });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error in RefundPayment: {ex.Message}");
                 return Json(new { success = false, message = "An error occurred while processing the refund: " + ex.Message });
             }
         }
