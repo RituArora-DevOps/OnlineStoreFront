@@ -41,54 +41,6 @@ namespace ECommerceSecureApp.Controllers
             var reviews = await _reviewRepo.GetAllAsync();
             ViewBag.TotalReviews = reviews.Count();
 
-            // Get recent active orders (last 15)
-            var recentActiveOrders = await _context.Orders
-                .Include(o => o.OrderStatus)
-                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
-                .Include(o => o.Payment).ThenInclude(p => p!.CreditCardPayment)
-                .Include(o => o.Payment).ThenInclude(p => p!.PayPalPayment)
-                .Where(o => o.OrderStatusId != 4) // Exclude cancelled orders
-                .OrderByDescending(o => o.CreatedDate)
-                .Take(15)
-                .Select(o => new
-                {
-                    OrderId = o.OrderId,
-                    CustomerId = o.ExternalUserId ?? "Unknown",
-                    OrderDate = o.CreatedDate,
-                    Status = o.OrderStatus != null ? o.OrderStatus.Status : "Unknown",
-                    TotalAmount = o.OrderItems != null ? o.OrderItems.Sum(oi => oi.Quantity * oi.PriceAtOrder) : 0,
-                    PaymentMethod = o.Payment != null ? 
-                        (o.Payment!.CreditCardPayment != null ? "Credit Card" : 
-                         o.Payment!.PayPalPayment != null ? "PayPal" : "Unknown") : "No Payment",
-                    ItemCount = o.OrderItems != null ? o.OrderItems.Count : 0
-                })
-                .ToListAsync();
-
-            // Get recent cancelled orders (last 15)
-            var recentCancelledOrders = await _context.Orders
-                .Include(o => o.OrderStatus)
-                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
-                .Include(o => o.Payment).ThenInclude(p => p!.CreditCardPayment)
-                .Include(o => o.Payment).ThenInclude(p => p!.PayPalPayment)
-                .Where(o => o.OrderStatusId == 4) // Only cancelled orders
-                .OrderByDescending(o => o.CreatedDate)
-                .Take(15)
-                .Select(o => new
-                {
-                    OrderId = o.OrderId,
-                    CustomerId = o.ExternalUserId ?? "Unknown",
-                    OrderDate = o.CreatedDate,
-                    Status = o.OrderStatus != null ? o.OrderStatus.Status : "Unknown",
-                    TotalAmount = o.OrderItems != null ? o.OrderItems.Sum(oi => oi.Quantity * oi.PriceAtOrder) : 0,
-                    PaymentMethod = o.Payment != null ? 
-                        (o.Payment!.CreditCardPayment != null ? "Credit Card" : 
-                         o.Payment!.PayPalPayment != null ? "PayPal" : "Unknown") : "No Payment",
-                    ItemCount = o.OrderItems != null ? o.OrderItems.Count : 0
-                })
-                .ToListAsync();
-
-            ViewBag.RecentActiveOrders = recentActiveOrders;
-            ViewBag.RecentCancelledOrders = recentCancelledOrders;
 
             return View();
         }

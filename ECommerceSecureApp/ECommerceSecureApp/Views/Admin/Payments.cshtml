@@ -51,10 +51,16 @@
                                     <td>@payment.OrderDate.ToString("MMM dd, yyyy")</td>
                                     <td>@payment.CreatedDate.ToString("MMM dd, yyyy")</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmRefund(@payment.OrderId, @payment.Amount, '@payment.PaymentMethod')">
-                                            Cancel & Refund
-                                        </button>
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("OrderDetails", "Admin", new { id = payment.OrderId })" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                View Details
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmRefund(@payment.OrderId, @payment.Amount, '@payment.PaymentMethod')">
+                                                Cancel & Refund
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             }

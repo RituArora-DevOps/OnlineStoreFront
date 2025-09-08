@@ -1,6 +1,4 @@
 ﻿@{
-    var recentActiveOrders = ViewBag.RecentActiveOrders as IEnumerable<dynamic>;
-    var recentCancelledOrders = ViewBag.RecentCancelledOrders as IEnumerable<dynamic>;
     var totalProducts = ViewBag.TotalProducts;
     var totalOrders = ViewBag.TotalOrders;
     var totalReviews = ViewBag.TotalReviews;
@@ -40,7 +38,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Recent Orders</h5>
-                    <h2 class="card-text">@((recentActiveOrders?.Count() ?? 0) + (recentCancelledOrders?.Count() ?? 0))</h2>
+                    <h2 class="card-text">@totalOrders</h2>
                 </div>
             </div>
         </div>
@@ -77,136 +75,6 @@
         </div>
     </div>
 
-    <!-- Recent Active Orders Table -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Recent Active Orders (Last 15)</h5>
-        </div>
-        <div class="card-body p-0">
-            @if (recentActiveOrders != null && recentActiveOrders.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Customer ID</th>
-                                <th>Order Date</th>
-                                <th>Status</th>
-                                <th>Total Amount</th>
-                                <th>Payment Method</th>
-                                <th>Items</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var order in recentActiveOrders)
-                            {
-                                <tr>
-                                    <td>
-                                        <a href="@Url.Action("OrderDetails", "Admin", new { id = order.OrderId })" 
-                                           class="text-decoration-none">
-                                            #@order.OrderId
-                                        </a>
-                                    </td>
-                                    <td>@order.CustomerId</td>
-                                    <td>@order.OrderDate.ToString("MMM dd, yyyy HH:mm")</td>
-                                    <td>
-                                        @if (order.Status == "Delivered")
-                                        {
-                                            <span class="badge bg-success">@order.Status</span>
-                                        }
-                                        else if (order.Status == "Pending")
-                                        {
-                                            <span class="badge bg-warning">@order.Status</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">@order.Status</span>
-                                        }
-                                    </td>
-                                    <td>@order.TotalAmount.ToString("C")</td>
-                                    <td>@order.PaymentMethod</td>
-                                    <td>@order.ItemCount item(s)</td>
-                                    <td>
-                                        <a href="@Url.Action("OrderDetails", "Admin", new { id = order.OrderId })" 
-                                           class="btn btn-sm btn-outline-primary">View Details</a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <h4 class="text-muted">No Active Orders Found</h4>
-                    <p class="text-muted">No active order records are available at this time.</p>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Recent Cancelled Orders Table -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Recent Cancelled Orders (Last 15)</h5>
-        </div>
-        <div class="card-body p-0">
-            @if (recentCancelledOrders != null && recentCancelledOrders.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Customer ID</th>
-                                <th>Order Date</th>
-                                <th>Status</th>
-                                <th>Total Amount</th>
-                                <th>Payment Method</th>
-                                <th>Items</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var order in recentCancelledOrders)
-                            {
-                                <tr>
-                                    <td>
-                                        <a href="@Url.Action("OrderDetails", "Admin", new { id = order.OrderId })" 
-                                           class="text-decoration-none">
-                                            #@order.OrderId
-                                        </a>
-                                    </td>
-                                    <td>@order.CustomerId</td>
-                                    <td>@order.OrderDate.ToString("MMM dd, yyyy HH:mm")</td>
-                                    <td>
-                                        <span class="badge bg-danger">@order.Status</span>
-                                    </td>
-                                    <td>@order.TotalAmount.ToString("C")</td>
-                                    <td>@order.PaymentMethod</td>
-                                    <td>@order.ItemCount item(s)</td>
-                                    <td>
-                                        <a href="@Url.Action("OrderDetails", "Admin", new { id = order.OrderId })" 
-                                           class="btn btn-sm btn-outline-primary">View Details</a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <h4 class="text-muted">No Cancelled Orders Found</h4>
-                    <p class="text-muted">No cancelled order records are available at this time.</p>
-                </div>
-            }
-        </div>
-    </div>
 </div>
 
 <style>
